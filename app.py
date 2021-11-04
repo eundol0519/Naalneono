@@ -26,6 +26,11 @@ def home():
 def join():
     return render_template('join.html')
 
+@app.route('/review')
+def review():
+    reviews = list(db.reviews.find({}, {'_id': False}))
+    return render_template('review.html', reviews=reviews)
+
 ## reviewWrite.html
 @app.route('/reviewWrite')
 def reviewWirte():
