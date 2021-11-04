@@ -14,6 +14,7 @@ app = Flask(__name__)
 from pymongo import MongoClient
 # client = MongoClient('내AWS아이피', 27017, username="test", password="test")
 client = MongoClient('localhost', 27017)
+# client = MongoClient('mongodb://test:test@localhost', 27017)
 db = client.dbsparta_plus_week3
 
 ## HTML을 주는 부분을 꼭 해야 한다.
@@ -102,7 +103,7 @@ def login():
     else:
         return jsonify({'result': 'fail', 'msg': '아이디/비밀번호가 일치하지 않습니다.'})
 
-## API 역할을 하는 부분
+
 
 ## reviewWrite api
 ## crawling 후 DB 저장.
@@ -134,7 +135,7 @@ def write_review():
             return jsonify({'msg': '이미 리뷰가 등록된 노래 입니다.'})
         else:
             doc = {'rv_song': rv_song, 'rv_image': rv_image, 'rv_singer': rv_singer, 'rv_url': url_receive,
-                   'rv_review': rv_review, 'rv_like': '0', 'rv_comment': ''}
+                   'rv_review': rv_review, 'rv_like': '0', 'rv_comment': '', 'rv_id':m_id}
             db.reviews.insert_one(doc)
             db.tempurl.delete_one({'m_id': m_id, 'rv_url': url_receive})
             return jsonify({'msg': '저장 완료.'})
@@ -159,32 +160,20 @@ def temp_save():
     token_receive = request.cookies.get('mytoken')
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-
         rv_url = request.form['music_url']
         rv_review = request.form['review_give']
-        doc = {'rv_url': rv_url, 'rv_review': rv_review, 'm_id': payload['id']}
-        db.tempurl.insert_one(doc)
-        return jsonify({'msg': '임시저장 완료'})
+        dup_check = db.tempurl.find_one({'rv_url':rv_url, 'rv_review':rv_review}, {'_id': False})
+        if dup_check is not None:
+            return jsonify({'msg': '동일한 임시저장 링크가 있습니다.'})
+        else:
+            doc = {'rv_url': rv_url, 'rv_review': rv_review, 'm_id': payload['id']}
+            db.tempurl.insert_one(doc)
+            return jsonify({'msg': ''})
     except jwt.ExpiredSignatureError:
         # 위를 실행했는데 만료시간이 지났으면 에러가 납니다.
         return jsonify({'result': 'fail', 'msg': '로그인 시간이 만료되었습니다.'})
     except jwt.exceptions.DecodeError:
         return jsonify({'result': 'fail', 'msg': '로그인 정보가 존재하지 않습니다.'})
-
-# @app.route('/api/tempWrite', methods=['GET'])
-# def temp_write():
-#     token_receive = request.cookies.get('mytoken')
-#     try:
-#         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-#         tempSave = db.tempurl.find_one({'m_id': payload['id']},{'_id': False})
-#         return jsonify({'tempSave': tempSave})
-#     except jwt.ExpiredSignatureError:
-#         # 위를 실행했는데 만료시간이 지났으면 에러가 납니다.
-#         return jsonify({'result': 'fail', 'msg': '로그인 시간이 만료되었습니다.'})
-#     except jwt.exceptions.DecodeError:
-#         return jsonify({'result': 'fail', 'msg': '로그인 정보가 존재하지 않습니다.'})
-
-
 
 
 ## 좋아요 api
@@ -205,7 +194,7 @@ def delete_pop():
     singer_receive = request.form['rv_singer_give']
     song_receive = request.form['rv_song_give']
     db.reviews.delete_one({'rv_singer': singer_receive, 'rv_song': song_receive})
-    return jsonify({'msg' : '삭제 완료'})
+    return jsonify({'msg': '삭제 완료'})
 
 @app.route('/api/commentSubmit', methods=['POST'])
 def commentSubmit():
@@ -238,10 +227,24 @@ def commentSubmit():
 ## GET 방식으로 rvSingerGive 를 받아옴
 @app.route('/api/popUp', methods=['GET'])
 def pop_up():
+
+    token_receive = request.cookies.get('mytoken')
+    payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
+    # 토큰에 있는 아이디 값 불러온다.
+
     singer_receive = request.args.get('rvSingerGive')
     song_receive = request.args.get('rvSongGive')
-    musicSinger = db.reviews.find_one({'rv_singer': singer_receive, 'rv_song': song_receive },{'_id':False})
-    return jsonify({'musicSinger': musicSinger})
+
+    musicSinger = db.reviews.find_one({'rv_singer': singer_receive, 'rv_song': song_receive},
+                                     {'_id': False})
+    # db에 가수랑 제목을 가지고 가서 find_one 해온다.
+
+    # if문을 사용해서 토큰 id랑 reviews에 있는 id랑 같으면
+    if musicSinger['rv_id'] == payload['id'] :
+        return jsonify({'result':'success'}, {'musicSinger': musicSinger})
+        # 성공 메세지를 전달한다.
+    else :
+        return jsonify({'result':'fail'}, {'musicSinger': musicSinger})
 
 @app.route('/api/commentUp', methods=['GET'])
 def comment_up():
@@ -251,7 +254,20 @@ def comment_up():
                                          {'_id': False, 'rv_singer': False, 'rv_song': False}))
      return jsonify({'comments': comments})
 
+# 회원에 따른 수정 삭제
+@app.route('/api/commentUp', methods=['GET'])
+def updateDeleteCheck():
 
+    token_receive = request.cookies.get('mytoken')
+    payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
+
+    singer_receive = request.args.get('rvSingerGive')
+    song_receive = request.args.get('rvSongGive')
+
+    check = list(db.reviews.find({'rv_singer': singer_receive, 'rv_song': song_receive},
+                                     {'_id': False}))
+
+    return jsonify()
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@
 <html lang="ko">
 
 <head>
-<!--    comment-->
+    <!--    comment-->
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -23,21 +23,25 @@
         * {
             font-family: "Stylish", sans-serif;
         }
+
         .wrap {
             text-align: center;
             margin: auto;
         }
+
         .comment {
             color: blue;
             font-weight: bold;
         }
+
         .card {
             text-align: center;
             display: inline-block;
-            height: 430px;
+            height: 350px;
+
         }
 
-        .popup{
+        .popup {
             border: 1px solid;
             border-color: #CECCCC;
             background-color: white;
@@ -54,16 +58,21 @@
             padding: 20px;
             font-size: 15px;
         }
+
         #cards-box {
             width: 800px;
+            margin: auto;
         }
+
         .nav_b {
             padding: 20px;
         }
+
         h1 {
             position: absolute;
             padding-left: 20px;
         }
+
         #popup {
             display: none;
             position: absolute;
@@ -87,19 +96,19 @@
             border: 5px grey;
         }
 
-        .naalneno{
+        .naalneno {
             margin: auto;
             text-align: center;
             margin-top: 20px;
         }
+        #closeBtn{
+            background-color: white;
+            float: right;
+        }
     </style>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script type="text/javascript">
-        function del_con() {
-          if (confirm("정말 삭제하시겠습니까?"))
-            list_ok.submit();
-         }
-
         <!-- 팝업창ajax -->
         function popUp(rv_singer, rv_song) {
             $.ajax({
@@ -116,26 +125,31 @@
                     cards_deck.style.opacity = '0.2'
                     popup.style.display = "block"
 
-                    let rvSong = response['musicSinger']['rv_song'];
-                    let rv_image = response['musicSinger']['rv_image'];
-                    let rvSinger = response['musicSinger']['rv_singer'];
-                    let rvLike = response['musicSinger']['rv_like'];
-                    let rvReview = response['musicSinger']['rv_review'];
-                    let temp_html = `<div class="card cardList">
-                                        <button class="btn closeBtn" align="right" onclick="closeBtn()">X</button>
+                    let rvSong = response[1]['musicSinger']['rv_song'];
+                    let rv_image = response[1]['musicSinger']['rv_image'];
+                    let rvSinger = response[1]['musicSinger']['rv_singer'];
+                    let rvLike = response[1]['musicSinger']['rv_like'];
+                    let rvReview = response[1]['musicSinger']['rv_review'];
+                    let temp_html = ''
+
+                    if(response[0]['result'] == 'success'){
+                        temp_html = `<div class="card cardList">
+                                        <button class="btn closeBtn" id="closeBtn" align="right" onclick="closeBtn()">X</button>
                                         <img class="card-img-top"
                                              src="${rv_image}"
                                              alt="Card image cap">
                                         <div class="card-body">
                                             <span>${rvSinger}</span>
                                             <span>${rvSong}</span>
-                                            <span>(좋아요: ${rvLike}</span>
+                                            <span>좋아요: ${rvLike}</span>
                                             <p>${rvReview}</p>
                                         </div>
-                                        <button onclick="setChildValue('${rvSong}', '${rvSinger}', '${rvReview}', '${rvLike}')">수정</button>
-                                        <button onclick="deleteBtn('${rvSinger}', '${rvSong}'), del_con()">삭제</button>
+                                        <div>
+                                            <button onclick="setChildValue('${rvSong}', '${rvSinger}', '${rvReview}', '${rvLike}')">수정</button>
+                                            <button onclick="deleteBtn('${rvSinger}', '${rvSong}')">삭제</button>
+                                        </div>
                                         <div class="commentBtn">
-                                           <form class="form-inline">
+                                           <form class="form-inline" onsubmit="return false;">
                                               <div class="form-group mx-sm-3 mb-2">
                                                 <input type="text" size="30" maxlength="28" class="form-control" id="inputText" placeholder="리뷰 댓글 작성">
                                               </div>
@@ -143,33 +157,56 @@
                                             </form>
                                         </div>
                                     </div>`
+                    }else{
+                        temp_html = `<div class="card cardList">
+                                        <button class="btn closeBtn" id="closeBtn" align="right" onclick="closeBtn()">X</button>
+                                        <img class="card-img-top"
+                                             src="${rv_image}"
+                                             alt="Card image cap">
+                                        <div class="card-body">
+                                            <span>${rvSinger}</span>
+                                            <span>${rvSong}</span>
+                                            <span>좋아요: ${rvLike}</span>
+                                            <p>${rvReview}</p>
+                                        </div>
+                                        <div class="commentBtn">
+                                           <form class="form-inline" onsubmit="return false;">
+                                              <div class="form-group mx-sm-3 mb-2">
+                                                <input type="text" size="30" maxlength="28" class="form-control" id="inputText" placeholder="리뷰 댓글 작성">
+                                              </div>
+                                              <button type="submit" onclick="commentSubmit('${rvSinger}', '${rvSong}')" class="btn btn-primary mb-2"> 등록 </button>
+                                            </form>
+                                        </div>
+                                    </div>`
+                    }
 
 
                     $('#popup1').append(temp_html)
                 }
-            })}
+            })
+        }
 
-            // function popUpOpa(){
-            //         let cards_deck = document.getElementById('cards-deck')
-            //         let popup = document.getElementById('popup')
-            //         cards_deck.style.opacity = '0.2'
-            //         popup.style.display = "block"
-            // }
+        // function popUpOpa(){
+        //         let cards_deck = document.getElementById('cards-deck')
+        //         let popup = document.getElementById('popup')
+        //         cards_deck.style.opacity = '0.2'
+        //         popup.style.display = "block"
+        // }
 
-            function popUpCommentUp(rv_singer, rv_song) {
-                popUp(rv_singer, rv_song);
-                commentUp(rv_singer, rv_song)
-            }
+        function popUpCommentUp(rv_singer, rv_song) {
+            popUp(rv_singer, rv_song);
+            commentUp(rv_singer, rv_song)
+        }
 
-            function commentUp(rv_singer, rv_song){
-                $.ajax({
+        function commentUp(rv_singer, rv_song) {
+            $.ajax({
                     type: "GET",
                     url: "api/commentUp?rvSingerGive=" + rv_singer + "&rvSongGive=" + rv_song,
                     data: {},
                     success: function (response) {
                         $('#commentAll').empty()
                         let comment = response['comments']
-                        for (let i = 0; i < comment.length; i++ ){
+                        for (let i = 0; i < comment.length; i++) {
                             let commentNick = comment[i]['m_name']
                             let commentList = comment[i]['rv_comment']
                             let temp_html = `<tr>
@@ -178,49 +215,54 @@
                                                 <td>21.11.03</td>
                                             </tr>`
                             $('#commentAll').append(temp_html)
-
-
                         }
-                        }
-
                     }
-            )}
 
-            //onclick 이벤트로 conmmentSubmit() 함수 실행
-            //DB에서 어떻게 관리할건지 생각
-            //그럼 (가수, 노래)로 구성된 DB저장공간 하나 만들고 거기에 저장?
-            //그럼 순서는 클릭 -> data 전달 (POST요청) (rv_singer, rv_song, rv_comment, rv_name)
-            //-> (rv_singer, rv_song, rv_comment, rv_name)를 DB에 저장
-            //-> popUp() 함수 실행 할때마다 (rv_singer, rv_song)이 일치하는 DB 찾고
-            //-> 해당 DB에서 (rv_name, rv_comment) 이거 내려줘서 클라이언트로 보내주고 (GET요청)
-            //-> 클라이언트에서 temp_html로 뿌려주면 끝
-        function commentSubmit(rv_singer, rv_song) {
-            let inputText = $('#inputText').val()
-            $.ajax({
-                type: "POST",
-                url: "/api/commentSubmit",
-                data: {
-                    rv_comment_give: inputText,
-                    rv_singer_give: rv_singer,
-                    rv_song_give: rv_song,
-                },
-                success: function (response) {
-                    console.log(response)
-                    alert(response["msg"]);
                 }
-            })
+            )
         }
 
-            //{#팝업창 닫기 버튼#}
-            //{#이름만 닫기버튼이지 그냥 css 바꿔서 감춰주는 역할#}
-            //{#기존에 남아있는 팝업창 데이터는 popUp() 에서 .empty()함수로 해결#}
-            function closeBtn(){
-                let cards_deck = document.getElementById('cards-deck')
-                let popup = document.getElementById('popup')
-                cards_deck.style.opacity = '1'
-                popup.style.display = "none"
+        //onclick 이벤트로 conmmentSubmit() 함수 실행
+        //DB에서 어떻게 관리할건지 생각
+        //그럼 (가수, 노래)로 구성된 DB저장공간 하나 만들고 거기에 저장?
+        //그럼 순서는 클릭 -> data 전달 (POST요청) (rv_singer, rv_song, rv_comment, rv_name)
+        //-> (rv_singer, rv_song, rv_comment, rv_name)를 DB에 저장
+        //-> popUp() 함수 실행 할때마다 (rv_singer, rv_song)이 일치하는 DB 찾고
+        //-> 해당 DB에서 (rv_name, rv_comment) 이거 내려줘서 클라이언트로 보내주고 (GET요청)
+        //-> 클라이언트에서 temp_html로 뿌려주면 끝
+        function commentSubmit(rv_singer, rv_song) {
+            let inputText = $('#inputText').val()
+
+            if(inputText !== ""){
+                $.ajax({
+                    type: "POST",
+                    url: "/api/commentSubmit",
+                    data: {
+                        rv_comment_give: inputText,
+                        rv_singer_give: rv_singer,
+                        rv_song_give: rv_song,
+                    },
+                    success: function (response) {
+                        console.log(response)
+                        alert(response["msg"]);
+                        window.location.reload()
+                    }
+                })
             }
-            function deleteBtn(rv_singer, rv_song) {
+        }
+
+        //{#팝업창 닫기 버튼#}
+        //{#이름만 닫기버튼이지 그냥 css 바꿔서 감춰주는 역할#}
+        //{#기존에 남아있는 팝업창 데이터는 popUp() 에서 .empty()함수로 해결#}
+        function closeBtn() {
+            let cards_deck = document.getElementById('cards-deck')
+            let popup = document.getElementById('popup')
+            cards_deck.style.opacity = '1'
+            popup.style.display = "none"
+        }
+
+        function deleteBtn(rv_singer, rv_song) {
+            if (confirm("정말로 삭제 하시겠습니까?")) {
                 $.ajax({
                     type: "POST",
                     url: "/api/delete",
@@ -235,32 +277,36 @@
                     }
                 })
             }
+        }
 
-            //{#onclick을 통해서 서버로 보내지 않고 바록 html 페이지로 데이터 전송해야 함.#}
-            //{#html 끼리 데이터 전송을 위해 URL로 통신. 이게 아마 get 요청할때 url 입력하는거랑 비슷해보이는데 공부 해야함.#}
-            function setChildValue(index1, index2, index3, index4){
-                window.location.href = "reviewUpdate?rvSong=" + index1 + "&rvSinger=" + index2 + "&rvReview=" + index3 + "&rvLike=" +index4
-            }
+        //{#onclick을 통해서 서버로 보내지 않고 바록 html 페이지로 데이터 전송해야 함.#}
+        //{#html 끼리 데이터 전송을 위해 URL로 통신. 이게 아마 get 요청할때 url 입력하는거랑 비슷해보이는데 공부 해야함.#}
+        function setChildValue(index1, index2, index3, index4) {
+            window.location.href = "reviewUpdate?rvSong=" + index1 + "&rvSinger=" + index2 + "&rvReview=" + index3 + "&rvLike=" + index4
+        }
 
         <!-- 좋아요 ajax -->
         function likeUp(rv_singer, rv_song) {
             $.ajax({
                 type: "POST",
                 url: "/api/like",
-                data: {rv_singer_give: rv_singer,
-                rv_song_give: rv_song},
+                data: {
+                    rv_singer_give: rv_singer,
+                    rv_song_give: rv_song
+                },
                 success: function (response) {
                     console.log(response)
                     alert(response["msg"]);
                     window.location.reload()
                 }
-            })}
+            })
+        }
 
         function sign_out() {
-                    $.removeCookie('mytoken', {path: '/'});
-                    alert('로그아웃!')
-                    window.location.href = "/"
-                }
+            $.removeCookie('mytoken', {path: '/'});
+            alert('로그아웃!')
+            window.location.href = "/"
+        }
 
     </script>
 </head>
@@ -283,23 +329,24 @@
     <div id="cards-deck" class="flex-container ">
         <div id="cards-box" class="card-columns">
             {% for review in reviews %}
-                <div class="card">
-                    {% set rv_song = review['rv_song'] %}
-                    {% set rv_singer = review['rv_singer'] %}
-                    {% set rv_image = review['rv_image'] %}
-                    {% set rv_like = review['rv_like'] %}
-                    {% set rv_url = review['rv_url'] %}
-                    <img class="card-img-top"
-                         src="{{ rv_image }}"
-                         alt="Card image cap"
-                         onclick="popUpCommentUp('{{ rv_singer }}','{{ rv_song }}')")>
-                    <div class="card-body">
-                        <p class="card-text">{{ rv_singer }}</p>
-                        <a target="_blank" href="{{ rv_url }}" class="card-title">{{ rv_song }}</a><br>
-                        <p class="card-text comment" onclick="likeUp('{{ rv_singer }}', '{{ rv_song }}')">(좋아요: {{ rv_like }}) </p>
+            <div class="card">
+                {% set rv_song = review['rv_song'] %}
+                {% set rv_singer = review['rv_singer'] %}
+                {% set rv_image = review['rv_image'] %}
+                {% set rv_like = review['rv_like'] %}
+                {% set rv_url = review['rv_url'] %}
+                <img class="card-img-top"
+                     src="{{ rv_image }}"
+                     alt="Card image cap"
+                     onclick="popUpCommentUp('{{ rv_singer }}','{{ rv_song }}')">
+                <div class="card-body">
+                    <p class="card-text">{{ rv_singer }}</p>
+                    <a target="_blank" href="{{ rv_url }}" class="card-title">{{ rv_song }}</a><br>
+                    <p class="card-text comment" onclick="likeUp('{{ rv_singer }}', '{{ rv_song }}')">(좋아요: {{ rv_like
+                        }}) </p>
 
-                    </div>
                 </div>
+            </div>
             {% endfor %}
         </div>
     </div>
@@ -322,7 +369,7 @@
                 <tbody id="commentAll">
 
                 </tbody>
-		</table>
+            </table>
         </div>
     </div>
 
