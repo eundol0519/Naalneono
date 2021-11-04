@@ -146,7 +146,7 @@
                                         <button onclick="setChildValue('${rvSong}', '${rvSinger}', '${rvReview}', '${rvLike}')">수정</button>
                                         <button onclick="deleteBtn('${rvSinger}', '${rvSong}')">삭제</button>
                                         <div class="commentBtn">
-                                           <form class="form-inline" onsubmit="return false;">
+                                           <form class="form-inline">
                                               <div class="form-group mx-sm-3 mb-2">
                                                 <input type="text" size="30" maxlength="28" class="form-control" id="inputText" placeholder="리뷰 댓글 작성">
                                               </div>
@@ -167,8 +167,6 @@
         //         cards_deck.style.opacity = '0.2'
         //         popup.style.display = "block"
         // }
-
-
 
         function popUpCommentUp(rv_singer, rv_song) {
             popUp(rv_singer, rv_song);
@@ -211,7 +209,6 @@
         //-> 클라이언트에서 temp_html로 뿌려주면 끝
         function commentSubmit(rv_singer, rv_song) {
             let inputText = $('#inputText').val()
-
                 $.ajax({
                     type: "POST",
                     url: "/api/commentSubmit",
@@ -222,7 +219,7 @@
                     },
                     success: function (response) {
                         console.log(response)
-                         alert(response["msg"])
+                        alert(response["msg"])
                     }
                 })
 
