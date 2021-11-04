@@ -101,6 +101,7 @@
 
 
     </style>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script type="text/javascript">
         function del_con() {
           if (confirm("정말 삭제하시겠습니까?"))
@@ -128,7 +129,6 @@
                     let rvSinger = response['musicSinger']['rv_singer'];
                     let rvLike = response['musicSinger']['rv_like'];
                     let rvReview = response['musicSinger']['rv_review'];
-
                     let temp_html = `<div class="card cardList">
                                         <button class="btn closeBtn" align="right" onclick="closeBtn()">X</button>
                                         <img class="card-img-top"
@@ -143,12 +143,12 @@
                                         <button onclick="setChildValue('${rvSong}', '${rvSinger}', '${rvReview}', '${rvLike}')">수정</button>
                                         <button onclick="deleteBtn('${rvSinger}', '${rvSong}'), del_con()">삭제</button>
                                         <div class="commentBtn">
-                                           <form class="form-inline">
+                                           <div class="form-inline">
                                               <div class="form-group mx-sm-3 mb-2">
                                                 <input type="text" size="30" maxlength="28" class="form-control" id="inputText" placeholder="리뷰 댓글 작성">
                                               </div>
-                                              <button type="submit" onclick="commentSubmit()" class="btn btn-primary mb-2"> 등록 </button>
-                                            </form>
+                                              <button type="submit" onclick="commentSubmit('${rvSinger}', '${rvSong}')" class="btn btn-primary mb-2"> 등록 </button>
+                                            </div>
                                         </div>
                                     </div>`
 
@@ -156,6 +156,45 @@
                     $('#popup1').append(temp_html)
                 }
             })}
+
+            // function popUpOpa(){
+            //         let cards_deck = document.getElementById('cards-deck')
+            //         let popup = document.getElementById('popup')
+            //         cards_deck.style.opacity = '0.2'
+            //         popup.style.display = "block"
+            // }
+
+            function popUpCommentUp(rv_singer, rv_song) {
+                popUp(rv_singer, rv_song);
+                commentUp(rv_singer, rv_song)
+            }
+
+            function commentUp(rv_singer, rv_song){
+
+                $.ajax({
+                    type: "GET",
+                    url: "api/commentUp?rvSingerGive=" + rv_singer + "&rvSongGive=" + rv_song,
+                    data: {},
+                    success: function (response) {
+
+                        $('#commentAll').empty()
+                        let comment = response['comments']
+                        for (let i = 0; i < comment.length; i++ ){
+                            let commentNick = comment[i]['m_name']
+                            let commentList = comment[i]['rv_comment']
+                            let temp_html = `<tr>
+                                                <th scope="row">${commentNick}</th>
+                                                <td>${commentList}</td>
+                                                <td>21.11.03</td>
+                                            </tr>`
+                            $('#commentAll').append(temp_html)
+
+
+                        }
+                        }
+
+                    }
+            )}
 
             //onclick 이벤트로 conmmentSubmit() 함수 실행
             //DB에서 어떻게 관리할건지 생각
@@ -165,21 +204,22 @@
             //-> popUp() 함수 실행 할때마다 (rv_singer, rv_song)이 일치하는 DB 찾고
             //-> 해당 DB에서 (rv_name, rv_comment) 이거 내려줘서 클라이언트로 보내주고 (GET요청)
             //-> 클라이언트에서 temp_html로 뿌려주면 끝
-        // function commentSubmit() {
-        //     $.ajax({
-        //         type: "POST",
-        //         url: "/commentSubmit",
-        //         data: {
-        //             rv_singer_give: rv_singer,
-        //             rv_song_give: rv_song
-        //         },
-        //         success: function (response) {
-        //             console.log(response)
-        //             alert(response["msg"]);
-        //             window.location.reload()
-        //         }
-        //     })
-        // }
+        function commentSubmit(rv_singer, rv_song) {
+            let inputText = $('#inputText').val()
+            $.ajax({
+                type: "POST",
+                url: "/api/commentSubmit",
+                data: {
+                    rv_comment_give: inputText,
+                    rv_singer_give: rv_singer,
+                    rv_song_give: rv_song,
+                },
+                success: function (response) {
+                    console.log(response)
+                    alert(response["msg"]);
+                }
+            })
+        }
 
             //{#팝업창 닫기 버튼#}
             //{#이름만 닫기버튼이지 그냥 css 바꿔서 감춰주는 역할#}
@@ -225,6 +265,13 @@
                     window.location.reload()
                 }
             })}
+
+        function sign_out() {
+                    $.removeCookie('mytoken', {path: '/'});
+                    alert('로그아웃!')
+                    window.location.href = "/"
+                }
+
     </script>
 </head>
 <body>
@@ -232,7 +279,7 @@
     <nav class="nav_b">
         <h1>로고</h1>
         <div class="btn_b" align="right">
-            <button type="submit" class="btn btn-warning">로그아웃</button>
+            <button type="submit" class="btn btn-warning" onclick="sign_out()">로그아웃</button>
             <button type="submit" class="btn btn-warning" onclick="window.location.href='/reviewWrite'">
                 글쓰기
             </button>
@@ -252,7 +299,7 @@
                     <img class="card-img-top"
                          src="{{ rv_image }}"
                          alt="Card image cap"
-                         onclick="popUp('{{ rv_singer }}','{{ rv_song }}')")>
+                         onclick="popUpCommentUp('{{ rv_singer }}','{{ rv_song }}')")>
                     <div class="card-body">
                         <p class="card-text">{{ rv_singer }}</p>
                         <a target="_blank" href="{{ rv_url }}" class="card-title">{{ rv_song }}</a>
@@ -280,11 +327,7 @@
                 </tr>
                 </thead>
                 <tbody id="commentAll">
-                <tr>
-                    <th scope="row">김주영</th>
-                    <td>댓글 내용</td>
-                    <td>21.11.03</td>
-                </tr>
+
                 </tbody>
 		</table>
         </div>
