@@ -14,6 +14,7 @@ app = Flask(__name__)
 from pymongo import MongoClient
 # client = MongoClient('내AWS아이피', 27017, username="test", password="test")
 client = MongoClient('localhost', 27017)
+# client = MongoClient('mongodb://test:test@localhost', 27017)
 db = client.dbsparta_plus_week3
 
 ## HTML을 주는 부분을 꼭 해야 한다.
@@ -102,7 +103,7 @@ def login():
     else:
         return jsonify({'result': 'fail', 'msg': '아이디/비밀번호가 일치하지 않습니다.'})
 
-## API 역할을 하는 부분
+
 
 ## reviewWrite api
 ## crawling 후 DB 저장.
@@ -159,32 +160,20 @@ def temp_save():
     token_receive = request.cookies.get('mytoken')
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-
         rv_url = request.form['music_url']
         rv_review = request.form['review_give']
-        doc = {'rv_url': rv_url, 'rv_review': rv_review, 'm_id': payload['id']}
-        db.tempurl.insert_one(doc)
-        return jsonify({'msg': '임시저장 완료'})
+        dup_check = db.tempurl.find_one({'rv_url':rv_url, 'rv_review':rv_review}, {'_id': False})
+        if dup_check is not None:
+            return jsonify({'msg': '동일한 임시저장 링크가 있습니다.'})
+        else:
+            doc = {'rv_url': rv_url, 'rv_review': rv_review, 'm_id': payload['id']}
+            db.tempurl.insert_one(doc)
+            return jsonify({'msg': ''})
     except jwt.ExpiredSignatureError:
         # 위를 실행했는데 만료시간이 지났으면 에러가 납니다.
         return jsonify({'result': 'fail', 'msg': '로그인 시간이 만료되었습니다.'})
     except jwt.exceptions.DecodeError:
         return jsonify({'result': 'fail', 'msg': '로그인 정보가 존재하지 않습니다.'})
-
-# @app.route('/api/tempWrite', methods=['GET'])
-# def temp_write():
-#     token_receive = request.cookies.get('mytoken')
-#     try:
-#         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-#         tempSave = db.tempurl.find_one({'m_id': payload['id']},{'_id': False})
-#         return jsonify({'tempSave': tempSave})
-#     except jwt.ExpiredSignatureError:
-#         # 위를 실행했는데 만료시간이 지났으면 에러가 납니다.
-#         return jsonify({'result': 'fail', 'msg': '로그인 시간이 만료되었습니다.'})
-#     except jwt.exceptions.DecodeError:
-#         return jsonify({'result': 'fail', 'msg': '로그인 정보가 존재하지 않습니다.'})
-
-
 
 
 ## 좋아요 api
