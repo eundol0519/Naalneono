@@ -109,6 +109,8 @@
     <script type="text/javascript"
             src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script type="text/javascript">
+
+
         <!-- 팝업창ajax -->
         function popUp(rv_singer, rv_song) {
             $.ajax({
@@ -125,15 +127,12 @@
                     cards_deck.style.opacity = '0.2'
                     popup.style.display = "block"
 
-                    let rvSong = response[1]['musicSinger']['rv_song'];
-                    let rv_image = response[1]['musicSinger']['rv_image'];
-                    let rvSinger = response[1]['musicSinger']['rv_singer'];
-                    let rvLike = response[1]['musicSinger']['rv_like'];
-                    let rvReview = response[1]['musicSinger']['rv_review'];
-                    let temp_html = ''
-
-                    if(response[0]['result'] == 'success'){
-                        temp_html = `<div class="card cardList">
+                    let rvSong = response['musicSinger']['rv_song'];
+                    let rv_image = response['musicSinger']['rv_image'];
+                    let rvSinger = response['musicSinger']['rv_singer'];
+                    let rvLike = response['musicSinger']['rv_like'];
+                    let rvReview = response['musicSinger']['rv_review'];
+                    let temp_html = `<div class="card cardList">
                                         <button class="btn closeBtn" id="closeBtn" align="right" onclick="closeBtn()">X</button>
                                         <img class="card-img-top"
                                              src="${rv_image}"
@@ -144,12 +143,10 @@
                                             <span>좋아요: ${rvLike}</span>
                                             <p>${rvReview}</p>
                                         </div>
-                                        <div>
-                                            <button onclick="setChildValue('${rvSong}', '${rvSinger}', '${rvReview}', '${rvLike}')">수정</button>
-                                            <button onclick="deleteBtn('${rvSinger}', '${rvSong}')">삭제</button>
-                                        </div>
+                                        <button onclick="setChildValue('${rvSong}', '${rvSinger}', '${rvReview}', '${rvLike}')">수정</button>
+                                        <button onclick="deleteBtn('${rvSinger}', '${rvSong}')">삭제</button>
                                         <div class="commentBtn">
-                                           <form class="form-inline" onsubmit="return false;">
+                                           <form class="form-inline">
                                               <div class="form-group mx-sm-3 mb-2">
                                                 <input type="text" size="30" maxlength="28" class="form-control" id="inputText" placeholder="리뷰 댓글 작성">
                                               </div>
@@ -157,28 +154,6 @@
                                             </form>
                                         </div>
                                     </div>`
-                    }else{
-                        temp_html = `<div class="card cardList">
-                                        <button class="btn closeBtn" id="closeBtn" align="right" onclick="closeBtn()">X</button>
-                                        <img class="card-img-top"
-                                             src="${rv_image}"
-                                             alt="Card image cap">
-                                        <div class="card-body">
-                                            <span>${rvSinger}</span>
-                                            <span>${rvSong}</span>
-                                            <span>좋아요: ${rvLike}</span>
-                                            <p>${rvReview}</p>
-                                        </div>
-                                        <div class="commentBtn">
-                                           <form class="form-inline" onsubmit="return false;">
-                                              <div class="form-group mx-sm-3 mb-2">
-                                                <input type="text" size="30" maxlength="28" class="form-control" id="inputText" placeholder="리뷰 댓글 작성">
-                                              </div>
-                                              <button type="submit" onclick="commentSubmit('${rvSinger}', '${rvSong}')" class="btn btn-primary mb-2"> 등록 </button>
-                                            </form>
-                                        </div>
-                                    </div>`
-                    }
 
 
                     $('#popup1').append(temp_html)
@@ -215,6 +190,8 @@
                                                 <td>21.11.03</td>
                                             </tr>`
                             $('#commentAll').append(temp_html)
+
+
                         }
                     }
 
@@ -232,23 +209,19 @@
         //-> 클라이언트에서 temp_html로 뿌려주면 끝
         function commentSubmit(rv_singer, rv_song) {
             let inputText = $('#inputText').val()
-
-            if(inputText !== ""){
-                $.ajax({
-                    type: "POST",
-                    url: "/api/commentSubmit",
-                    data: {
-                        rv_comment_give: inputText,
-                        rv_singer_give: rv_singer,
-                        rv_song_give: rv_song,
-                    },
-                    success: function (response) {
-                        console.log(response)
-                        alert(response["msg"]);
-                        window.location.reload()
-                    }
-                })
-            }
+            $.ajax({
+                type: "POST",
+                url: "/api/commentSubmit",
+                data: {
+                    rv_comment_give: inputText,
+                    rv_singer_give: rv_singer,
+                    rv_song_give: rv_song,
+                },
+                success: function (response) {
+                    console.log(response)
+                    alert(response["msg"]);
+                }
+            })
         }
 
         //{#팝업창 닫기 버튼#}
@@ -338,7 +311,7 @@
                 <img class="card-img-top"
                      src="{{ rv_image }}"
                      alt="Card image cap"
-                     onclick="popUpCommentUp('{{ rv_singer }}','{{ rv_song }}')">
+                     onclick="popUpCommentUp('{{ rv_singer }}','{{ rv_song }}')" >
                 <div class="card-body">
                     <p class="card-text">{{ rv_singer }}</p>
                     <a target="_blank" href="{{ rv_url }}" class="card-title">{{ rv_song }}</a><br>
