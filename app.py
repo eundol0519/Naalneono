@@ -194,7 +194,7 @@ def delete_pop():
     singer_receive = request.form['rv_singer_give']
     song_receive = request.form['rv_song_give']
     db.reviews.delete_one({'rv_singer': singer_receive, 'rv_song': song_receive})
-    return jsonify({'msg' : '삭제 완료'})
+    return jsonify({'msg': '삭제 완료'})
 
 @app.route('/api/commentSubmit', methods=['POST'])
 def commentSubmit():

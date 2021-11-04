@@ -140,11 +140,11 @@
                                         <div class="card-body">
                                             <span>${rvSinger}</span>
                                             <span>${rvSong}</span>
-                                            <span>(좋아요: ${rvLike}</span>
+                                            <span>좋아요: ${rvLike}</span>
                                             <p>${rvReview}</p>
                                         </div>
                                         <button onclick="setChildValue('${rvSong}', '${rvSinger}', '${rvReview}', '${rvLike}')">수정</button>
-                                        <button onclick="deleteBtn(${rv_singer}, ${rv_song})">삭제</button>
+                                        <button onclick="deleteBtn('${rvSinger}', '${rvSong}')">삭제</button>
                                         <div class="commentBtn">
                                            <form class="form-inline">
                                               <div class="form-group mx-sm-3 mb-2">
@@ -234,7 +234,7 @@
             popup.style.display = "none"
         }
 
-        function deleteBtn(rv_singe, rv_song) {
+        function deleteBtn(rv_singer, rv_song) {
             if (confirm("정말로 삭제 하시겠습니까?")) {
                 $.ajax({
                     type: "POST",
@@ -311,7 +311,7 @@
                 <img class="card-img-top"
                      src="{{ rv_image }}"
                      alt="Card image cap"
-                     onclick="popUpCommentUp('{{ rv_singer }}','{{ rv_song }}')" )>
+                     onclick="popUpCommentUp('{{ rv_singer }}','{{ rv_song }}')" >
                 <div class="card-body">
                     <p class="card-text">{{ rv_singer }}</p>
                     <a target="_blank" href="{{ rv_url }}" class="card-title">{{ rv_song }}</a><br>
