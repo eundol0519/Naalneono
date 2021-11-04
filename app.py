@@ -34,7 +34,16 @@ def review():
 ## reviewWrite.html
 @app.route('/reviewWrite')
 def reviewWirte():
-    return render_template('reviewWrite.html')
+    token_receive = request.cookies.get('mytoken')
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
+        tempSave = db.tempurl.find_one({'m_id': payload['id']}, {'_id': False})
+        return render_template('reviewWrite.html', tempSave=tempSave)
+    except jwt.ExpiredSignatureError:
+        # 위를 실행했는데 만료시간이 지났으면 에러가 납니다.
+        return jsonify({'result': 'fail', 'msg': '로그인 시간이 만료되었습니다.'})
+    except jwt.exceptions.DecodeError:
+        return jsonify({'result': 'fail', 'msg': '로그인 정보가 존재하지 않습니다.'})
 
 ## reviewUpdate.html
 @app.route('/reviewUpdate')
@@ -99,27 +108,43 @@ def login():
 ## crawling 후 DB 저장.
 @app.route('/api/reviewWrite', methods=['POST'])
 def write_review():
-    url_receive = request.form['music_url']
-    rv_review = request.form['review_give']
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36'}
-    data = requests.get(url_receive, headers=headers)
+    token_receive = request.cookies.get('mytoken')
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
 
-    soup = BeautifulSoup(data.text, 'html.parser')
-    rv_song = soup.select_one(
-        '#frm > div > table > tbody > tr > td:nth-child(4) > div > div > div:nth-child(1) > span > a').text
-    rv_image = soup.select_one('#d_album_org > img')['src']
-    rv_singer = soup.select_one(
-        '#frm > div > table > tbody > tr > td:nth-child(4) > div > div > div.ellipsis.rank02 > a').text
+        url_receive = request.form['music_url']
+        rv_review = request.form['review_give']
+        m_id = payload['id']
 
-    ## 리뷰 등록 중복 체크
-    dup_check = db.reviews.find_one({'rv_song': rv_song})
-    if dup_check is not None:
-        return jsonify({'msg': '이미 리뷰가 등록된 노래 입니다.'})
-    else:
-        doc = {'rv_song': rv_song, 'rv_image': rv_image, 'rv_singer': rv_singer, 'rv_url': url_receive, 'rv_review': rv_review, 'rv_like': '0', 'rv_comment':''}
-        db.reviews.insert_one(doc)
-        return jsonify({'msg': '저장 완료.'})
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36'}
+        data = requests.get(url_receive, headers=headers)
+
+        soup = BeautifulSoup(data.text, 'html.parser')
+        rv_song = soup.select_one(
+            '#frm > div > table > tbody > tr > td:nth-child(4) > div > div > div:nth-child(1) > span > a').text
+        rv_image = soup.select_one('#d_album_org > img')['src']
+        rv_singer = soup.select_one(
+            '#frm > div > table > tbody > tr > td:nth-child(4) > div > div > div.ellipsis.rank02 > a').text
+
+        ## 리뷰 등록 중복 체크
+        dup_check = db.reviews.find_one({'rv_song': rv_song})
+        if dup_check is not None:
+            db.tempurl.delete_one({'m_id': m_id, 'rv_url': url_receive})
+            return jsonify({'msg': '이미 리뷰가 등록된 노래 입니다.'})
+        else:
+            doc = {'rv_song': rv_song, 'rv_image': rv_image, 'rv_singer': rv_singer, 'rv_url': url_receive,
+                   'rv_review': rv_review, 'rv_like': '0', 'rv_comment': ''}
+            db.reviews.insert_one(doc)
+            db.tempurl.delete_one({'m_id': m_id, 'rv_url': url_receive})
+            return jsonify({'msg': '저장 완료.'})
+
+    except jwt.ExpiredSignatureError:
+        # 위를 실행했는데 만료시간이 지났으면 에러가 납니다.
+        return jsonify({'result': 'fail', 'msg': '로그인 시간이 만료되었습니다.'})
+    except jwt.exceptions.DecodeError:
+        return jsonify({'result': 'fail', 'msg': '로그인 정보가 존재하지 않습니다.'})
+
 
 @app.route('/api/reviewUpdate', methods=['POST'])
 def review_update():
@@ -131,11 +156,35 @@ def review_update():
 
 @app.route('/api/tempSave', methods=['POST'])
 def temp_save():
-    rv_url = request.form['music_url']
-    rv_review = request.form['review_give']
-    doc = {'rv_url':rv_url, 'rv_review':rv_review}
-    db.tempurl.insert_one(doc)
-    return jsonify({'msg': '무야호'})
+    token_receive = request.cookies.get('mytoken')
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
+
+        rv_url = request.form['music_url']
+        rv_review = request.form['review_give']
+        doc = {'rv_url': rv_url, 'rv_review': rv_review, 'm_id': payload['id']}
+        db.tempurl.insert_one(doc)
+        return jsonify({'msg': '임시저장 완료'})
+    except jwt.ExpiredSignatureError:
+        # 위를 실행했는데 만료시간이 지났으면 에러가 납니다.
+        return jsonify({'result': 'fail', 'msg': '로그인 시간이 만료되었습니다.'})
+    except jwt.exceptions.DecodeError:
+        return jsonify({'result': 'fail', 'msg': '로그인 정보가 존재하지 않습니다.'})
+
+# @app.route('/api/tempWrite', methods=['GET'])
+# def temp_write():
+#     token_receive = request.cookies.get('mytoken')
+#     try:
+#         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
+#         tempSave = db.tempurl.find_one({'m_id': payload['id']},{'_id': False})
+#         return jsonify({'tempSave': tempSave})
+#     except jwt.ExpiredSignatureError:
+#         # 위를 실행했는데 만료시간이 지났으면 에러가 납니다.
+#         return jsonify({'result': 'fail', 'msg': '로그인 시간이 만료되었습니다.'})
+#     except jwt.exceptions.DecodeError:
+#         return jsonify({'result': 'fail', 'msg': '로그인 정보가 존재하지 않습니다.'})
+
+
 
 
 ## 좋아요 api
