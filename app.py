@@ -14,6 +14,7 @@ app = Flask(__name__)
 from pymongo import MongoClient
 # client = MongoClient('내AWS아이피', 27017, username="test", password="test")
 client = MongoClient('localhost', 27017)
+# client = MongoClient('mongodb://test:test@localhost', 27017)
 db = client.dbsparta_plus_week3
 
 ## HTML을 주는 부분을 꼭 해야 한다.
@@ -170,21 +171,6 @@ def temp_save():
         return jsonify({'result': 'fail', 'msg': '로그인 시간이 만료되었습니다.'})
     except jwt.exceptions.DecodeError:
         return jsonify({'result': 'fail', 'msg': '로그인 정보가 존재하지 않습니다.'})
-
-# @app.route('/api/tempWrite', methods=['GET'])
-# def temp_write():
-#     token_receive = request.cookies.get('mytoken')
-#     try:
-#         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-#         tempSave = db.tempurl.find_one({'m_id': payload['id']},{'_id': False})
-#         return jsonify({'tempSave': tempSave})
-#     except jwt.ExpiredSignatureError:
-#         # 위를 실행했는데 만료시간이 지났으면 에러가 납니다.
-#         return jsonify({'result': 'fail', 'msg': '로그인 시간이 만료되었습니다.'})
-#     except jwt.exceptions.DecodeError:
-#         return jsonify({'result': 'fail', 'msg': '로그인 정보가 존재하지 않습니다.'})
-
-
 
 
 ## 좋아요 api
