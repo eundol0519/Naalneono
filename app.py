@@ -84,7 +84,7 @@ def login():
          'id': m_id_receive,
          'exp': datetime.utcnow() + timedelta(seconds=60 * 60 * 24)  # 로그인 24시간 유지
         }
-        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256').decode('utf-8')
+        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
         print(token)
         # jwt 토큰은 놀이공원 자유이용권 같은 거
 
@@ -117,7 +117,7 @@ def write_review():
     if dup_check is not None:
         return jsonify({'msg': '이미 리뷰가 등록된 노래 입니다.'})
     else:
-        doc = {'rv_song': rv_song, 'rv_image': rv_image, 'rv_singer': rv_singer, 'rv_url': url_receive, 'rv_review': rv_review, 'rv_like': '0'}
+        doc = {'rv_song': rv_song, 'rv_image': rv_image, 'rv_singer': rv_singer, 'rv_url': url_receive, 'rv_review': rv_review, 'rv_like': '0', 'rv_comment':''}
         db.reviews.insert_one(doc)
         return jsonify({'msg': '저장 완료.'})
 
@@ -158,12 +158,31 @@ def delete_pop():
     db.reviews.delete_one({'rv_singer': singer_receive, 'rv_song': song_receive})
     return jsonify({'msg' : '삭제 완료'})
 
-# @app.route('/popUp', methods=['POST'])
-# def pop_up():
-#     singer_receive = request.form['rv_singer_give']
-#     music_singer = db.reviews.find_one({'rv_singer': singer_receive},{'_id':False})
-#     db.popup.insert_one(music_singer)
-#     return jsonify({'msg' :'ㅇ'})
+@app.route('/api/commentSubmit', methods=['POST'])
+def commentSubmit():
+    token_receive = request.cookies.get('mytoken')
+    try:
+        payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
+
+        comment_receive = request.form['rv_comment_give']
+        singer_receive = request.form['rv_singer_give']
+        song_receive = request.form['rv_song_give']
+        userinfo = db.member_info.find_one({'m_id': payload['id']}, {'_id': False})
+        m_nick = userinfo['m_name']
+
+        doc = {
+            'rv_comment': comment_receive,
+            'rv_singer': singer_receive,
+            'rv_song': song_receive,
+            'm_name': m_nick
+            }
+        db.comments.insert_one(doc)
+        return jsonify({'msg' :'댓글작성 완료'})
+    except jwt.ExpiredSignatureError:
+        # 위를 실행했는데 만료시간이 지났으면 에러가 납니다.
+        return jsonify({'result': 'fail', 'msg': '로그인 시간이 만료되었습니다.'})
+    except jwt.exceptions.DecodeError:
+        return jsonify({'result': 'fail', 'msg': '로그인 정보가 존재하지 않습니다.'})
 
 
 ## 팝업창 api
@@ -175,16 +194,15 @@ def pop_up():
     musicSinger = db.reviews.find_one({'rv_singer': singer_receive, 'rv_song': song_receive },{'_id':False})
     return jsonify({'musicSinger': musicSinger})
 
-# @app.route('/api/dataGo', methods=['POST'])
-# def data_go():
-#     singer_receive = request.form['rv_singer_give']
-#     data = db.reviews.find_one({'rv_singer': singer_receive})
-#     dup_check = db.popup.find_one({'rv_singer': data})
-#     if dup_check is not None:
-#         return
-#     else:
-#         db.popup.insert_one(data)
-#     return jsonify({'msg' : 'popUP DB저장 완료!'})
+@app.route('/api/commentUp', methods=['GET'])
+def comment_up():
+     singer_receive = request.args.get('rvSingerGive')
+     song_receive = request.args.get('rvSongGive')
+     comments = list(db.comments.find({'rv_singer': singer_receive, 'rv_song': song_receive},
+                                         {'_id': False, 'rv_singer': False, 'rv_song': False}))
+     return jsonify({'comments': comments})
+
+
 
 
 if __name__ == '__main__':
