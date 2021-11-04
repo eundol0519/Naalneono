@@ -101,6 +101,10 @@
 
     </style>
     <script type="text/javascript">
+        function del_con() {
+          if (confirm("정말 삭제하시겠습니까?"))
+            list_ok.submit();
+         }
 
         <!-- 팝업창ajax -->
         function popUp(rv_singer, rv_song) {
@@ -136,7 +140,7 @@
                                             <p>${rvReview}</p>
                                         </div>
                                         <button onclick="setChildValue('${rvSong}', '${rvSinger}', '${rvReview}', '${rvLike}')">수정</button>
-                                        <button onclick="deleteBtn('${rvSinger}', '${rvSong}')">삭제</button>
+                                        <button onclick="deleteBtn('${rvSinger}', '${rvSong}'), del_con()">삭제</button>
                                         <div class="commentBtn">
                                            <form class="form-inline">
                                               <div class="form-group mx-sm-3 mb-2">
