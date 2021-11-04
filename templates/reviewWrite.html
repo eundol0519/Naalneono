@@ -25,6 +25,18 @@
 
         <script type="text/javascript">
 
+
+
+            function tempWrite() {
+                 $.ajax({
+                    type: "GET",
+                    url: "api/tempWrite",
+                    data: {},
+                    success: function (response) {
+
+                        }
+            })}
+
             <!-- 리뷰작성ajax -->
             function makeReview() {
                 let url = $('#post-url').val()
@@ -107,11 +119,11 @@
 
               <label for="post-url">링크 입력</label>
 
-              <input id="post-url" class="form-control" placeholder="">
+              <input id="post-url" class="form-control" value="{{ tempSave['rv_url']}}">
           </div>
           <div class="form-group">
               <label for="post-comment">리뷰 작성</label>
-              <textarea id="post-comment" class="form-control" rows="2"></textarea>
+              <input id="post-comment" class="form-control" value="{{tempSave['rv_review']}}" ></input>
           </div>
           <button type="button" class="btn btn-primary" onclick="temSave()">임시저장</button>
           <button type="button" class="btn btn-primary" onclick="reWrite()">다시쓰기</button>

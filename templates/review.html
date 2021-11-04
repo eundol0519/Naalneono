@@ -143,12 +143,12 @@
                                         <button onclick="setChildValue('${rvSong}', '${rvSinger}', '${rvReview}', '${rvLike}')">수정</button>
                                         <button onclick="deleteBtn('${rvSinger}', '${rvSong}'), del_con()">삭제</button>
                                         <div class="commentBtn">
-                                           <div class="form-inline">
+                                           <form class="form-inline">
                                               <div class="form-group mx-sm-3 mb-2">
                                                 <input type="text" size="30" maxlength="28" class="form-control" id="inputText" placeholder="리뷰 댓글 작성">
                                               </div>
                                               <button type="submit" onclick="commentSubmit('${rvSinger}', '${rvSong}')" class="btn btn-primary mb-2"> 등록 </button>
-                                            </div>
+                                            </form>
                                         </div>
                                     </div>`
 
@@ -170,13 +170,11 @@
             }
 
             function commentUp(rv_singer, rv_song){
-
                 $.ajax({
                     type: "GET",
                     url: "api/commentUp?rvSingerGive=" + rv_singer + "&rvSongGive=" + rv_song,
                     data: {},
                     success: function (response) {
-
                         $('#commentAll').empty()
                         let comment = response['comments']
                         for (let i = 0; i < comment.length; i++ ){
