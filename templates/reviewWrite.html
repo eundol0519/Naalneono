@@ -85,7 +85,7 @@
            padding: 50px;
            border: 1px solid antiquewhite;
            border-radius: 20px;
-             background-color: antiquewhite;
+             background-color: #CECCCC;
              position: relative;
              transform: translateY(50%);
          }
@@ -94,7 +94,6 @@
              margin: 2px;
          }
           .wrap {
-            background-color: RGBA(232, 52, 78, 0.2);
             min-height: 100vh;
             width: 100%;
             margin: 0px;
@@ -104,8 +103,8 @@
 <div class="wrap">
     <div id="post-box" class="form-post">
       <div>
-          <button type="button" class="btn btn-primary"  onclick="window.location.href ='/review'">X</button>
-          <h1>로고</h1>
+          <button type="button" class="btn"  onclick="window.location.href ='/review'">X</button>
+          <h1>글쓰기</h1>
           <div class="form-group">
 
               <label for="post-url">링크 입력</label>
@@ -116,9 +115,9 @@
               <label for="post-comment">리뷰 작성</label>
               <input id="post-comment" class="form-control" value="{{tempSave['rv_review']}}" ></input>
           </div>
-          <button type="button" class="btn btn-primary" onclick="temSave()">임시저장</button>
-          <button type="button" class="btn btn-primary" onclick="reWrite()">다시쓰기</button>
-          <button type="button" class="btn btn-primary" onclick="makeReview()">작성</button>
+          <button type="button" class="btn" onclick="temSave()">임시저장</button>
+          <button type="button" class="btn" onclick="reWrite()">다시쓰기</button>
+          <button type="button" class="btn" onclick="makeReview()">작성</button>
       </div>
     </div>
 </div>

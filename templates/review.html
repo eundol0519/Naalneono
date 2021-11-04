@@ -24,7 +24,7 @@
             font-family: "Stylish", sans-serif;
         }
         .wrap {
-
+            text-align: center;
             margin: auto;
         }
         .comment {
@@ -34,18 +34,31 @@
         .card {
             text-align: center;
             display: inline-block;
+            height: 430px;
         }
-        .cards-back {
-            background-color: RGBA(232, 52, 78, 0.2);
-            min-height: 100vh;
-            width: 100%;
+
+        .popup{
+            border: 1px solid;
+            border-color: #CECCCC;
+            background-color: white;
+        }
+
+        .flex-container {
+            display: flex;
+            width: 50%;
+            margin: auto;
+        }
+
+        .flex-container > div {
+            margin: 10px;
+            padding: 20px;
+            font-size: 15px;
         }
         #cards-box {
             width: 800px;
         }
         .nav_b {
             padding: 20px;
-            background-color: antiquewhite;
         }
         h1 {
             position: absolute;
@@ -55,7 +68,7 @@
             display: none;
             position: absolute;
             width: 350px;
-            top: 30%;
+            top: 10%;
             left: 40%;
         }
 
@@ -65,32 +78,7 @@
 
 
         .cardList {
-                        width: 350px;
-        }
-
-        .resetBtn {
-            border: 1px solid gray;
-            border-radius: 2px;
-            background-color: gray;
-            color: aliceblue;
-        }
-
-        #popup2 {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            margin: auto;
-        }
-
-        #popup3 {
-            width: 70px;
-            border: 1px solid burlywood;
-            background-color: burlywood;
-            color: aliceblue;
-        }
-
-        #commentRv{
-            width: 30px;
+            width: 350px;
         }
 
         .commentBox {
@@ -99,7 +87,11 @@
             border: 5px grey;
         }
 
-
+        .naalneno{
+            margin: auto;
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script type="text/javascript">
@@ -137,7 +129,7 @@
                                         <div class="card-body">
                                             <span>${rvSinger}</span>
                                             <span>${rvSong}</span>
-                                            <span>좋아요: ${rvLike}</span>
+                                            <span>(좋아요: ${rvLike}</span>
                                             <p>${rvReview}</p>
                                         </div>
                                         <button onclick="setChildValue('${rvSong}', '${rvSinger}', '${rvReview}', '${rvLike}')">수정</button>
@@ -275,17 +267,20 @@
 <body>
 <div class="wrap">
     <nav class="nav_b">
-        <h1>로고</h1>
-        <div class="btn_b" align="right">
-            <button type="submit" class="btn btn-warning" onclick="sign_out()">로그아웃</button>
-            <button type="submit" class="btn btn-warning" onclick="window.location.href='/reviewWrite'">
+        <div class="naalneno">
+            <h3 class="subtitle is-sparta" onclick="window.location.href='/review'">나알너노<br>
+                나만 알고 싶은 데 너에게 추천하는 노래</h3>
+        </div>
+        <div class="btn_b">
+            <button type="submit" class="btn" onclick="sign_out()">로그아웃</button>
+            <button type="submit" class="btn" onclick="window.location.href='/reviewWrite'">
                 글쓰기
             </button>
         </div>
     </nav>
 
     <!-- jinja2 SSR 적용 부분  -->
-    <div id="cards-deck" class="cards-back ">
+    <div id="cards-deck" class="flex-container ">
         <div id="cards-box" class="card-columns">
             {% for review in reviews %}
                 <div class="card">
@@ -300,8 +295,8 @@
                          onclick="popUpCommentUp('{{ rv_singer }}','{{ rv_song }}')")>
                     <div class="card-body">
                         <p class="card-text">{{ rv_singer }}</p>
-                        <a target="_blank" href="{{ rv_url }}" class="card-title">{{ rv_song }}</a>
-                        <p class="card-text comment" onclick="likeUp('{{ rv_singer }}', '{{ rv_song }}')">좋아요: {{ rv_like }} </p>
+                        <a target="_blank" href="{{ rv_url }}" class="card-title">{{ rv_song }}</a><br>
+                        <p class="card-text comment" onclick="likeUp('{{ rv_singer }}', '{{ rv_song }}')">(좋아요: {{ rv_like }}) </p>
 
                     </div>
                 </div>
@@ -313,7 +308,7 @@
     <!--{#팝업창은 매번 띄어주는 데이터가 매번 달라져야 하기 때문에 temp_html로 갖다 붙였는데 이게 맞는 방법인지 모르겠음#}-->
     <!--{#jinja2로 구성하려면 DB에 저장하고 그 저장된 데이터를 찾아서 붙여줘야하는데 애초에 DB에 저장을 안하고 띄어주는 방식이라서 temp_html로 구성#}{#    #}-->
     <!--{#CSS는 너무 어렵다#}-->
-    <div id="popup">
+    <div id="popup" class="popup">
         <div id="popup1"></div>
         <div id="popComment">
             <table class="table commentBox">
