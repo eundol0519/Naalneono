@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- 구글폰트 -->
+    <link href="https://fonts.googleapis.com/css?family=Stylish&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: "Stylish", sans-serif;
+        }
+
+        span{
+            font-size: 10px;
+        }
+
+        .wrap{
+            text-align: center;
+            padding-top: 15%;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        function login() {
+
+            $("#id_span").text("")
+            $("#pw_span").text("")
+
+            let userId = $("#m_id").val()
+            let userPw = $("#m_pw").val()
+
+            if (userId == "") {
+                $("#id_span").text("아이디를 입력해주세요.")
+                document.getElementById("id_span").style.color = "red"
+                $("#m_id").focus()
+                return;
+            } else {
+                $("#id_span").text("")
+            }
+
+            if (userPw == "") {
+                $("#pw_span").text("비밀번호를 입력해주세요.")
+                document.getElementById("pw_span").style.color = "red"
+                $("#m_pw").focus()
+                return;
+            } else {
+                $("#pw_span").text("")
+            }
+            $.ajax({
+                type: "POST",
+                url: "/api/login",
+                data: {
+                    m_id_give: userId,
+                    m_pw_give: userPw
+                },
+                success: function (response) {
+                    if (response['result'] == 'success') {
+                        $.cookie('mytoken', response['token'], {path: '/'});
+                        location.href = "/review"
+                        // script에서 링크를 이동 할 때는 location.href = "링크"를 사용한다.
+                    } else {
+                        alert(response['msg'])
+                        $("#m_id").val("")
+                        $("#m_pw").val("")
+                    }
+                }
+            });
+        }
+    </script>
+</head>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<body>
+    <div class="wrap">
+        <section class="hero is-white">
+            <div class="hero-body has-text-centered" style="padding-bottom:1rem;margin:auto;">
+                <h1 class="title is-sparta" onclick="window.location.href='/'">나알너노</h1>
+                <h3 class="subtitle is-sparta">나만 알고 싶은 데 너에게 추천하는 노래</h3>
+            </div>
+        </section>
+        <!-- 아이디, 비밀번호 -->
+        <div>
+            아이디 : <input id="m_id" type="text"><br>
+            <span id="id_span"></span><br>
+            비밀번호 : <input id="m_pw" type="password"><br>
+            <span id="pw_span"></span><br>
+        </div>
+        <!-- 로그인 -->
+        <button onclick="login()">로그인</button>
+        <!-- 회원가입 -->
+        <button onclick="window.location.href='/join'">회원가입</button>
+    </div>
+</body>
+</html>
