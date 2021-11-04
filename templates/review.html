@@ -1,12 +1,298 @@
-<!DOCTYPE html>
-<html lang="en">
+<!Doctype html>
+<html lang="ko">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+          crossorigin="anonymous">
+    <!-- JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <!-- 구글폰트 -->
+    <link href="https://fonts.googleapis.com/css?family=Stylish&display=swap" rel="stylesheet">
+    <title>나알너노</title>
+    <!-- style -->
+    <style type="text/css">
+        * {
+            font-family: "Stylish", sans-serif;
+        }
+        .wrap {
+
+            margin: auto;
+        }
+        .comment {
+            color: blue;
+            font-weight: bold;
+        }
+        .card {
+            text-align: center;
+            display: inline-block;
+        }
+        .cards-back {
+            background-color: RGBA(232, 52, 78, 0.2);
+            min-height: 100vh;
+            width: 100%;
+        }
+        #cards-box {
+            width: 800px;
+        }
+        .nav_b {
+            padding: 20px;
+            background-color: antiquewhite;
+        }
+        h1 {
+            position: absolute;
+            padding-left: 20px;
+        }
+        #popup {
+            display: none;
+            position: absolute;
+            width: 350px;
+            top: 30%;
+            left: 40%;
+        }
+
+        .commentBtn {
+            margin-top: 10px;
+        }
+
+
+        .cardList {
+                        width: 350px;
+        }
+
+        .resetBtn {
+            border: 1px solid gray;
+            border-radius: 2px;
+            background-color: gray;
+            color: aliceblue;
+        }
+
+        #popup2 {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin: auto;
+        }
+
+        #popup3 {
+            width: 70px;
+            border: 1px solid burlywood;
+            background-color: burlywood;
+            color: aliceblue;
+        }
+
+        #commentRv{
+            width: 30px;
+        }
+
+        .commentBox {
+            width: 350px;
+            background-color: white;
+            border: 5px grey;
+        }
+
+
+    </style>
+    <script type="text/javascript">
+
+        <!-- 팝업창ajax -->
+        function popUp(rv_singer, rv_song) {
+            $.ajax({
+                type: "GET",
+                url: "api/popUp?rvSingerGive=" + rv_singer + "&rvSongGive=" + rv_song,
+                data: {},
+                success: function (response) {
+                    //{#팝업창이 중복으로 뜨는 것을 막기위해 추가#}
+                    $('#popup1').empty()
+
+                    //{#팝업창 보여줄때 배경과 팝업창 효과#}
+                    let cards_deck = document.getElementById('cards-deck')
+                    let popup = document.getElementById('popup')
+                    cards_deck.style.opacity = '0.2'
+                    popup.style.display = "block"
+
+                    let rvSong = response['musicSinger']['rv_song'];
+                    let rv_image = response['musicSinger']['rv_image'];
+                    let rvSinger = response['musicSinger']['rv_singer'];
+                    let rvLike = response['musicSinger']['rv_like'];
+                    let rvReview = response['musicSinger']['rv_review'];
+
+                    let temp_html = `<div class="card cardList">
+                                        <button class="btn closeBtn" align="right" onclick="closeBtn()">X</button>
+                                        <img class="card-img-top"
+                                             src="${rv_image}"
+                                             alt="Card image cap">
+                                        <div class="card-body">
+                                            <span>${rvSinger}</span>
+                                            <span>${rvSong}</span>
+                                            <span>좋아요: ${rvLike}</span>
+                                            <p>${rvReview}</p>
+                                        </div>
+                                        <button onclick="setChildValue('${rvSong}', '${rvSinger}', '${rvReview}', '${rvLike}')">수정</button>
+                                        <button onclick="deleteBtn('${rvSinger}', '${rvSong}')">삭제</button>
+                                        <div class="commentBtn">
+                                           <form class="form-inline">
+                                              <div class="form-group mx-sm-3 mb-2">
+                                                <input type="text" size="30" maxlength="28" class="form-control" id="inputText" placeholder="리뷰 댓글 작성">
+                                              </div>
+                                              <button type="submit" onclick="commentSubmit()" class="btn btn-primary mb-2"> 등록 </button>
+                                            </form>
+                                        </div>
+                                    </div>`
+
+
+                    $('#popup1').append(temp_html)
+                }
+            })}
+
+            //onclick 이벤트로 conmmentSubmit() 함수 실행
+            //DB에서 어떻게 관리할건지 생각
+            //그럼 (가수, 노래)로 구성된 DB저장공간 하나 만들고 거기에 저장?
+            //그럼 순서는 클릭 -> data 전달 (POST요청) (rv_singer, rv_song, rv_comment, rv_name)
+            //-> (rv_singer, rv_song, rv_comment, rv_name)를 DB에 저장
+            //-> popUp() 함수 실행 할때마다 (rv_singer, rv_song)이 일치하는 DB 찾고
+            //-> 해당 DB에서 (rv_name, rv_comment) 이거 내려줘서 클라이언트로 보내주고 (GET요청)
+            //-> 클라이언트에서 temp_html로 뿌려주면 끝
+        // function commentSubmit() {
+        //     $.ajax({
+        //         type: "POST",
+        //         url: "/commentSubmit",
+        //         data: {
+        //             rv_singer_give: rv_singer,
+        //             rv_song_give: rv_song
+        //         },
+        //         success: function (response) {
+        //             console.log(response)
+        //             alert(response["msg"]);
+        //             window.location.reload()
+        //         }
+        //     })
+        // }
+
+            //{#팝업창 닫기 버튼#}
+            //{#이름만 닫기버튼이지 그냥 css 바꿔서 감춰주는 역할#}
+            //{#기존에 남아있는 팝업창 데이터는 popUp() 에서 .empty()함수로 해결#}
+            function closeBtn(){
+                let cards_deck = document.getElementById('cards-deck')
+                let popup = document.getElementById('popup')
+                cards_deck.style.opacity = '1'
+                popup.style.display = "none"
+            }
+            function deleteBtn(rv_singer, rv_song) {
+                $.ajax({
+                    type: "POST",
+                    url: "/api/delete",
+                    data: {
+                        rv_singer_give: rv_singer,
+                        rv_song_give: rv_song
+                    },
+                    success: function (response) {
+                        console.log(response)
+                        alert(response["msg"]);
+                        window.location.reload()
+                    }
+                })
+            }
+
+            //{#onclick을 통해서 서버로 보내지 않고 바록 html 페이지로 데이터 전송해야 함.#}
+            //{#html 끼리 데이터 전송을 위해 URL로 통신. 이게 아마 get 요청할때 url 입력하는거랑 비슷해보이는데 공부 해야함.#}
+            function setChildValue(index1, index2, index3, index4){
+                window.location.href = "reviewUpdate?rvSong=" + index1 + "&rvSinger=" + index2 + "&rvReview=" + index3 + "&rvLike=" +index4
+            }
+
+        <!-- 좋아요 ajax -->
+        function likeUp(rv_singer, rv_song) {
+            $.ajax({
+                type: "POST",
+                url: "/api/like",
+                data: {rv_singer_give: rv_singer,
+                rv_song_give: rv_song},
+                success: function (response) {
+                    console.log(response)
+                    alert(response["msg"]);
+                    window.location.reload()
+                }
+            })}
+    </script>
 </head>
 <body>
+<<<<<<< HEAD
     <p>로그인에 성공</p>
     <p>주석</p>
     <p>주석</p>
+=======
+<div class="wrap">
+    <nav class="nav_b">
+        <h1>로고</h1>
+        <div class="btn_b" align="right">
+            <button type="submit" class="btn btn-warning">로그아웃</button>
+            <button type="submit" class="btn btn-warning" onclick="window.location.href='/reviewWrite'">
+                글쓰기
+            </button>
+        </div>
+    </nav>
+
+    <!-- jinja2 SSR 적용 부분  -->
+    <div id="cards-deck" class="cards-back ">
+        <div id="cards-box" class="card-columns">
+            {% for review in reviews %}
+                <div class="card">
+                    {% set rv_song = review['rv_song'] %}
+                    {% set rv_singer = review['rv_singer'] %}
+                    {% set rv_image = review['rv_image'] %}
+                    {% set rv_like = review['rv_like'] %}
+                    {% set rv_url = review['rv_url'] %}
+                    <img class="card-img-top"
+                         src="{{ rv_image }}"
+                         alt="Card image cap"
+                         onclick="popUp('{{ rv_singer }}','{{ rv_song }}')")>
+                    <div class="card-body">
+                        <p class="card-text">{{ rv_singer }}</p>
+                        <a target="_blank" href="{{ rv_url }}" class="card-title">{{ rv_song }}</a>
+                        <p class="card-text comment" onclick="likeUp('{{ rv_singer }}', '{{ rv_song }}')">좋아요: {{ rv_like }} </p>
+
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 팝업창 들어갈 위치. -->
+    <!--{#팝업창은 매번 띄어주는 데이터가 매번 달라져야 하기 때문에 temp_html로 갖다 붙였는데 이게 맞는 방법인지 모르겠음#}-->
+    <!--{#jinja2로 구성하려면 DB에 저장하고 그 저장된 데이터를 찾아서 붙여줘야하는데 애초에 DB에 저장을 안하고 띄어주는 방식이라서 temp_html로 구성#}{#    #}-->
+    <!--{#CSS는 너무 어렵다#}-->
+    <div id="popup">
+        <div id="popup1"></div>
+        <div id="popComment">
+            <table class="table commentBox">
+                <thead>
+                <tr>
+                    <th scope="col">닉네임</th>
+                    <th scope="col">댓글</th>
+                    <th scope="col">등록 날짜</th>
+                </tr>
+                </thead>
+                <tbody id="commentAll">
+                <tr>
+                    <th scope="row">김주영</th>
+                    <td>댓글 내용</td>
+                    <td>21.11.03</td>
+                </tr>
+                </tbody>
+		</table>
+        </div>
+    </div>
+
+</div>
+</div>
+>>>>>>> 0f82c5de2f2b97f8d5e421afb6404409bdcece75
 </body>
+
 </html>
