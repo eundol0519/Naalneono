@@ -1,38 +1,37 @@
 <!DOCTYPE html>
 <html lang="ko">
 
-    <head>
-        <!-- Webpage Title -->
-        <title>나알너노</title>
+<head>
+    <!-- Webpage Title -->
+    <title>나알너노</title>
 
-        <!-- Required meta tags -->
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-        <!-- Bootstrap CSS -->
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-              integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
-              crossorigin="anonymous">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+          crossorigin="anonymous">
 
-        <!-- JS -->
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
-                integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
-                crossorigin="anonymous"></script>
+    <!-- JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
 
-        <!-- 구글폰트 -->
-        <link href="https://fonts.googleapis.com/css?family=Do+Hyeon&display=swap" rel="stylesheet">
+    <!-- 구글폰트 -->
+    <link href="https://fonts.googleapis.com/css?family=Do+Hyeon&display=swap" rel="stylesheet">
 
-        <script type="text/javascript">
-
-
+    <script type="text/javascript">
 
 
-            <!-- 리뷰작성ajax -->
-            function makeReview() {
-                let url = $('#post-url').val()
-                let review = $('#post-comment').val()
-                if (url !== "" && review !== ""){
+        <!--
+        리뷰작성ajax -->
+        function makeReview() {
+            let url = $('#post-url').val()
+            let review = $('#post-comment').val()
+            if (url !== "" && review !== "") {
                 $.ajax({
                     type: "POST",
                     url: "/api/reviewWrite",
@@ -43,84 +42,92 @@
                     }
                 })
             } else {
-                    alert('링크, 리뷰를 입력해주세요.')
-                }
-
-
-            }
-            <!-- 리뷰작성 다시쓰기 ajax -->
-            function reWrite() {
-                document.getElementById("post-url").value = "";
-                document.getElementById("post-comment").value = "";
+                alert('링크, 리뷰를 입력해주세요.')
             }
 
-            <!-- 리뷰작성 임시저장 ajax -->
-            <!-- 어떻게 구현해야할지 모르겠음.. -->
 
-            function temSave() {
-                let url = $('#post-url').val()
-                let review = $('#post-comment').val()
-                if (url !== "" && review !== ""){
-                 $.ajax({
+        }
+
+        <!-- 리뷰작성 다시쓰기 ajax -->
+        function reWrite() {
+            document.getElementById("post-url").value = "";
+            document.getElementById("post-comment").value = "";
+        }
+
+        <!-- 리뷰작성 임시저장 ajax -->
+        <!-- 어떻게 구현해야할지 모르겠음.. -->
+
+        function temSave() {
+            let url = $('#post-url').val()
+            let review = $('#post-comment').val()
+            if (url !== "" && review !== "") {
+                $.ajax({
                     type: "POST",
                     url: "/api/tempSave",
                     data: {music_url: url, review_give: review},
                     success: function (response) {
-                       window.location.href = "/review";
+                        if (response['msg'] === "") {
+                            window.location.href = "/review";
+                        } else {
+                            alert(response['msg'])
+                        }
                     }
                 })
-             } else {
-                    alert('링크, 리뷰를 입력해주세요.')
-                }
+            } else {
+                alert('링크, 리뷰를 입력해주세요.')
             }
-        </script>
-    </head>
-    <style>
-         * {
-                font-family: "Stylish", sans-serif;
-         }
-         #post-box {
-           width: 500px;
-           margin:  auto;
-           padding: 50px;
-           border: 1px solid antiquewhite;
-           border-radius: 20px;
-             background-color: #CECCCC;
-             position: relative;
-             transform: translateY(50%);
-         }
-         .btn {
-             float: right;
-             margin: 2px;
-         }
-          .wrap {
-            min-height: 100vh;
-            width: 100%;
-            margin: 0px;
         }
-    </style>
-    <body>
+    </script>
+</head>
+<style>
+    * {
+        font-family: "Stylish", sans-serif;
+    }
+
+    #post-box {
+        width: 500px;
+        margin: auto;
+        padding: 50px;
+        border: 1px solid antiquewhite;
+        border-radius: 20px;
+        background-color: #CECCCC;
+        position: relative;
+        transform: translateY(50%);
+    }
+
+    .btn {
+        float: right;
+        margin: 2px;
+    }
+
+    .wrap {
+        min-height: 100vh;
+        width: 100%;
+        margin: 0px;
+    }
+</style>
+<body>
 <div class="wrap">
     <div id="post-box" class="form-post">
-      <div>
-          <button type="button" class="btn"  onclick="window.location.href ='/review'">X</button>
-          <h1>글쓰기</h1>
-          <div class="form-group">
+        <div>
+            <button type="button" class="btn" onclick="window.location.href ='/review'">X</button>
+            <h1>글쓰기</h1>
+            <div class="form-group">
 
-              <label for="post-url">링크 입력</label>
+                <label for="post-url">링크 입력</label>
 
-              <input id="post-url" class="form-control" value="{{ tempSave['rv_url']}}">
-          </div>
-          <div class="form-group">
-              <label for="post-comment">리뷰 작성</label>
-              <input id="post-comment" class="form-control" value="{{tempSave['rv_review']}}" ></input>
-          </div>
-          <button type="button" class="btn" onclick="temSave()">임시저장</button>
-          <button type="button" class="btn" onclick="reWrite()">다시쓰기</button>
-          <button type="button" class="btn" onclick="makeReview()">작성</button>
-      </div>
+                <input id="post-url" class="form-control" value="{{ tempSave['rv_url']}}">
+            </div>
+            <div class="form-group">
+                <label for="post-comment">리뷰 작성</label>
+                <input id="post-comment" class="form-control" value="{{tempSave['rv_review']}}"></input>
+            </div>
+            <button type="button" class="btn" onclick="temSave()">임시저장</button>
+            <button type="button" class="btn" onclick="reWrite()">다시쓰기</button>
+            <button type="button" class="btn" onclick="makeReview()">작성</button>
+        </div>
     </div>
 </div>
-    </body>
+</body>
 
 </html>
