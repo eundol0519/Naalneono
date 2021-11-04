@@ -209,6 +209,8 @@
         //-> 클라이언트에서 temp_html로 뿌려주면 끝
         function commentSubmit(rv_singer, rv_song) {
             let inputText = $('#inputText').val()
+
+            if(inputText !== ""){
                 $.ajax({
                     type: "POST",
                     url: "/api/commentSubmit",
@@ -219,10 +221,11 @@
                     },
                     success: function (response) {
                         console.log(response)
-                        alert(response["msg"])
+                        alert(response["msg"]);
+                        window.location.reload()
                     }
                 })
-
+            }
         }
 
         //{#팝업창 닫기 버튼#}
