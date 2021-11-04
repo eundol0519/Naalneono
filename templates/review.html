@@ -146,7 +146,7 @@
                                         <button onclick="setChildValue('${rvSong}', '${rvSinger}', '${rvReview}', '${rvLike}')">수정</button>
                                         <button onclick="deleteBtn('${rvSinger}', '${rvSong}')">삭제</button>
                                         <div class="commentBtn">
-                                           <form class="form-inline">
+                                           <form class="form-inline" onsubmit="return false;">
                                               <div class="form-group mx-sm-3 mb-2">
                                                 <input type="text" size="30" maxlength="28" class="form-control" id="inputText" placeholder="리뷰 댓글 작성">
                                               </div>
@@ -167,6 +167,8 @@
         //         cards_deck.style.opacity = '0.2'
         //         popup.style.display = "block"
         // }
+
+
 
         function popUpCommentUp(rv_singer, rv_song) {
             popUp(rv_singer, rv_song);
@@ -209,19 +211,21 @@
         //-> 클라이언트에서 temp_html로 뿌려주면 끝
         function commentSubmit(rv_singer, rv_song) {
             let inputText = $('#inputText').val()
-            $.ajax({
-                type: "POST",
-                url: "/api/commentSubmit",
-                data: {
-                    rv_comment_give: inputText,
-                    rv_singer_give: rv_singer,
-                    rv_song_give: rv_song,
-                },
-                success: function (response) {
-                    console.log(response)
-                    alert(response["msg"]);
-                }
-            })
+
+                $.ajax({
+                    type: "POST",
+                    url: "/api/commentSubmit",
+                    data: {
+                        rv_comment_give: inputText,
+                        rv_singer_give: rv_singer,
+                        rv_song_give: rv_song,
+                    },
+                    success: function (response) {
+                        console.log(response)
+                         alert(response["msg"])
+                    }
+                })
+
         }
 
         //{#팝업창 닫기 버튼#}
