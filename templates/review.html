@@ -37,7 +37,8 @@
         .card {
             text-align: center;
             display: inline-block;
-            height: 430px;
+            height: 350px;
+
         }
 
         .popup {
@@ -60,6 +61,7 @@
 
         #cards-box {
             width: 800px;
+            margin: auto;
         }
 
         .nav_b {
@@ -99,14 +101,15 @@
             text-align: center;
             margin-top: 20px;
         }
+        #closeBtn{
+            background-color: white;
+            float: right;
+        }
     </style>
     <script type="text/javascript"
             src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script type="text/javascript">
-        function del_con() {
-            if (confirm("정말 삭제하시겠습니까?"))
-                list_ok.submit();
-        }
+
 
         <!-- 팝업창ajax -->
         function popUp(rv_singer, rv_song) {
@@ -130,7 +133,7 @@
                     let rvLike = response['musicSinger']['rv_like'];
                     let rvReview = response['musicSinger']['rv_review'];
                     let temp_html = `<div class="card cardList">
-                                        <button class="btn closeBtn" align="right" onclick="closeBtn()">X</button>
+                                        <button class="btn closeBtn" id="closeBtn" align="right" onclick="closeBtn()">X</button>
                                         <img class="card-img-top"
                                              src="${rv_image}"
                                              alt="Card image cap">
@@ -141,7 +144,7 @@
                                             <p>${rvReview}</p>
                                         </div>
                                         <button onclick="setChildValue('${rvSong}', '${rvSinger}', '${rvReview}', '${rvLike}')">수정</button>
-                                        <button onclick="deleteBtn('${rvSinger}', '${rvSong}'), del_con()">삭제</button>
+                                        <button onclick="deleteBtn(${rv_singer}, ${rv_song})">삭제</button>
                                         <div class="commentBtn">
                                            <form class="form-inline">
                                               <div class="form-group mx-sm-3 mb-2">
@@ -231,20 +234,22 @@
             popup.style.display = "none"
         }
 
-        function deleteBtn(rv_singer, rv_song) {
-            $.ajax({
-                type: "POST",
-                url: "/api/delete",
-                data: {
-                    rv_singer_give: rv_singer,
-                    rv_song_give: rv_song
-                },
-                success: function (response) {
-                    console.log(response)
-                    alert(response["msg"]);
-                    window.location.reload()
-                }
-            })
+        function deleteBtn(rv_singe, rv_song) {
+            if (confirm("정말로 삭제 하시겠습니까?")) {
+                $.ajax({
+                    type: "POST",
+                    url: "/api/delete",
+                    data: {
+                        rv_singer_give: rv_singer,
+                        rv_song_give: rv_song
+                    },
+                    success: function (response) {
+                        console.log(response)
+                        alert(response["msg"]);
+                        window.location.reload()
+                    }
+                })
+            }
         }
 
         //{#onclick을 통해서 서버로 보내지 않고 바록 html 페이지로 데이터 전송해야 함.#}
