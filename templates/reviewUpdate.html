@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+    <head>
+        <!-- Webpage Title -->
+        <title>나알너노</title>
+
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+              integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+              crossorigin="anonymous">
+
+        <!-- JS -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+                integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+                crossorigin="anonymous"></script>
+
+        <!-- 구글폰트 -->
+        <link href="https://fonts.googleapis.com/css?family=Do+Hyeon&display=swap" rel="stylesheet">
+
+        <script type="text/javascript">
+
+
+            let getLink = window.location.search;
+            let getUserName = getLink.split('&')//getLink를 '='를 기준으로 두 배열 요소로 분리
+            let getOnlyName0 = getUserName[0].split('=')[1]
+            let getOnlyName1 = getUserName[1].split('=')[1]
+            // let getOnlyName2 = getUserName[2].split('=')[1]
+            // let getOnlyName3 = getUserName[3].split('=')[1]
+            let rvSong = decodeURI(getOnlyName0)
+            let rvSinger = decodeURI(getOnlyName1)
+            // let rvReview = decodeURI(getOnlyName2)
+            // let rvLike = decodeURI(getOnlyName3)
+
+            $(document).ready(function loadPri() {
+                let temp_html = `<h1>로고</h1>
+                                  <button type="button" class="btn btn-primary" onclick="window.location.href='/review'">X</button>
+                                  <span>${rvSinger}</span>
+                                  <span>${rvSong}</span>`
+                $('#load-pri').append(temp_html)
+            })
+
+
+             function reWrite() {
+                document.getElementById("post-comment").value = "";
+            }
+
+            function reviewUpdate() {
+                let reUpdate = $('#post-comment').val();
+                if (reUpdate !== "") {
+                    $.ajax({
+                        type: "POST",
+                        url: "/api/reviewUpdate",
+                        data: {
+                            rv_singer_give: rvSinger,
+                            rv_song_give: rvSong,
+                            review_update: reUpdate
+                        },
+                        success: function (response) {
+                            console.log(response)
+                            window.location.href = '/review'
+                        }
+                    })
+                } else {
+                    alert("내용을 입력해주세요 ")
+                }
+            }
+        </script>
+    </head>
+    <style>
+         * {
+                font-family: "Stylish", sans-serif;
+         }
+         #post-box {
+           width: 500px;
+           margin:  auto;
+           padding: 50px;
+           border: 1px solid antiquewhite;
+           border-radius: 20px;
+             background-color: antiquewhite;
+             position: relative;
+             transform: translateY(50%);
+         }
+         .btn {
+             float: right;
+             margin: 2px;
+         }
+          .wrap {
+            background-color: RGBA(232, 52, 78, 0.2);
+            min-height: 100vh;
+            width: 100%;
+            margin: 0px;
+        }
+    </style>
+    <body>
+    <div class="wrap">
+        <div id="post-box" class="form-post">
+            <div id="load-pri">
+            </div>
+            <div class="form-group">
+                <label for="post-comment">리뷰 작성</label>
+                <textarea id="post-comment" class="form-control" rows="2"></textarea>
+            </div>
+            <div>
+                <button type="button" class="btn btn-primary" onclick="reWrite()">다시쓰기</button>
+                <button type="button" class="btn btn-primary" onclick="reviewUpdate()">작성</button>
+            </div>
+        </div>
+    </div>
+    </body>
+</html>
