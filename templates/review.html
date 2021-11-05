@@ -37,7 +37,8 @@
         .card {
             text-align: center;
             display: inline-block;
-            height: 430px;
+            height: 350px;
+
         }
 
         .popup {
@@ -60,6 +61,7 @@
 
         #cards-box {
             width: 800px;
+            margin: auto;
         }
 
         .nav_b {
@@ -99,14 +101,15 @@
             text-align: center;
             margin-top: 20px;
         }
+        #closeBtn{
+            background-color: white;
+            float: right;
+        }
     </style>
     <script type="text/javascript"
             src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
     <script type="text/javascript">
-        function del_con() {
-            if (confirm("정말 삭제하시겠습니까?"))
-                list_ok.submit();
-        }
+
 
         <!-- 팝업창ajax -->
         function popUp(rv_singer, rv_song) {
@@ -124,26 +127,29 @@
                     cards_deck.style.opacity = '0.2'
                     popup.style.display = "block"
 
-                    let rvSong = response['musicSinger']['rv_song'];
-                    let rv_image = response['musicSinger']['rv_image'];
-                    let rvSinger = response['musicSinger']['rv_singer'];
-                    let rvLike = response['musicSinger']['rv_like'];
-                    let rvReview = response['musicSinger']['rv_review'];
-                    let temp_html = `<div class="card cardList">
-                                        <button class="btn closeBtn" align="right" onclick="closeBtn()">X</button>
+                    let rvSong = response[1]['musicSinger']['rv_song'];
+                    let rv_image = response[1]['musicSinger']['rv_image'];
+                    let rvSinger = response[1]['musicSinger']['rv_singer'];
+                    let rvLike = response[1]['musicSinger']['rv_like'];
+                    let rvReview = response[1]['musicSinger']['rv_review'];
+                    let temp_html = ""
+
+                    if(response[0]['result']=='success'){
+                                                temp_html = `<div class="card cardList">
+                                        <button class="btn closeBtn" id="closeBtn" align="right" onclick="closeBtn()">X</button>
                                         <img class="card-img-top"
                                              src="${rv_image}"
                                              alt="Card image cap">
                                         <div class="card-body">
                                             <span>${rvSinger}</span>
                                             <span>${rvSong}</span>
-                                            <span>(좋아요: ${rvLike}</span>
+                                            <span>좋아요: ${rvLike}</span>
                                             <p>${rvReview}</p>
                                         </div>
                                         <button onclick="setChildValue('${rvSong}', '${rvSinger}', '${rvReview}', '${rvLike}')">수정</button>
-                                        <button onclick="deleteBtn('${rvSinger}', '${rvSong}'), del_con()">삭제</button>
+                                        <button onclick="deleteBtn('${rvSinger}', '${rvSong}')">삭제</button>
                                         <div class="commentBtn">
-                                           <form class="form-inline">
+                                           <form class="form-inline" onsubmit="return false;">
                                               <div class="form-group mx-sm-3 mb-2">
                                                 <input type="text" size="30" maxlength="28" class="form-control" id="inputText" placeholder="리뷰 댓글 작성">
                                               </div>
@@ -151,7 +157,28 @@
                                             </form>
                                         </div>
                                     </div>`
-
+                    }else{
+                                                temp_html = `<div class="card cardList">
+                                        <button class="btn closeBtn" id="closeBtn" align="right" onclick="closeBtn()">X</button>
+                                        <img class="card-img-top"
+                                             src="${rv_image}"
+                                             alt="Card image cap">
+                                        <div class="card-body">
+                                            <span>${rvSinger}</span>
+                                            <span>${rvSong}</span>
+                                            <span>좋아요: ${rvLike}</span>
+                                            <p>${rvReview}</p>
+                                        </div>
+                                        <div class="commentBtn">
+                                           <form class="form-inline" onsubmit="return false;">
+                                              <div class="form-group mx-sm-3 mb-2">
+                                                <input type="text" size="30" maxlength="28" class="form-control" id="inputText" placeholder="리뷰 댓글 작성">
+                                              </div>
+                                              <button type="submit" onclick="commentSubmit('${rvSinger}', '${rvSong}')" class="btn btn-primary mb-2"> 등록 </button>
+                                            </form>
+                                        </div>
+                                    </div>`
+                    }
 
                     $('#popup1').append(temp_html)
                 }
@@ -187,8 +214,6 @@
                                                 <td>21.11.03</td>
                                             </tr>`
                             $('#commentAll').append(temp_html)
-
-
                         }
                     }
 
@@ -206,19 +231,23 @@
         //-> 클라이언트에서 temp_html로 뿌려주면 끝
         function commentSubmit(rv_singer, rv_song) {
             let inputText = $('#inputText').val()
-            $.ajax({
-                type: "POST",
-                url: "/api/commentSubmit",
-                data: {
-                    rv_comment_give: inputText,
-                    rv_singer_give: rv_singer,
-                    rv_song_give: rv_song,
-                },
-                success: function (response) {
-                    console.log(response)
-                    alert(response["msg"]);
-                }
-            })
+
+            if(inputText !== ""){
+                $.ajax({
+                    type: "POST",
+                    url: "/api/commentSubmit",
+                    data: {
+                        rv_comment_give: inputText,
+                        rv_singer_give: rv_singer,
+                        rv_song_give: rv_song,
+                    },
+                    success: function (response) {
+                        console.log(response)
+                        alert(response["msg"]);
+                        window.location.reload()
+                    }
+                })
+            }
         }
 
         //{#팝업창 닫기 버튼#}
@@ -232,19 +261,21 @@
         }
 
         function deleteBtn(rv_singer, rv_song) {
-            $.ajax({
-                type: "POST",
-                url: "/api/delete",
-                data: {
-                    rv_singer_give: rv_singer,
-                    rv_song_give: rv_song
-                },
-                success: function (response) {
-                    console.log(response)
-                    alert(response["msg"]);
-                    window.location.reload()
-                }
-            })
+            if (confirm("정말로 삭제 하시겠습니까?")) {
+                $.ajax({
+                    type: "POST",
+                    url: "/api/delete",
+                    data: {
+                        rv_singer_give: rv_singer,
+                        rv_song_give: rv_song
+                    },
+                    success: function (response) {
+                        console.log(response)
+                        alert(response["msg"]);
+                        window.location.reload()
+                    }
+                })
+            }
         }
 
         //{#onclick을 통해서 서버로 보내지 않고 바록 html 페이지로 데이터 전송해야 함.#}
@@ -306,7 +337,7 @@
                 <img class="card-img-top"
                      src="{{ rv_image }}"
                      alt="Card image cap"
-                     onclick="popUpCommentUp('{{ rv_singer }}','{{ rv_song }}')" )>
+                     onclick="popUpCommentUp('{{ rv_singer }}','{{ rv_song }}')" >
                 <div class="card-body">
                     <p class="card-text">{{ rv_singer }}</p>
                     <a target="_blank" href="{{ rv_url }}" class="card-title">{{ rv_song }}</a><br>
