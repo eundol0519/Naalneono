@@ -135,7 +135,7 @@ def write_review():
             return jsonify({'msg': '이미 리뷰가 등록된 노래 입니다.'})
         else:
             doc = {'rv_song': rv_song, 'rv_image': rv_image, 'rv_singer': rv_singer, 'rv_url': url_receive,
-                   'rv_review': rv_review, 'rv_like': '0', 'rv_comment': '', 'rv_id':m_id}
+                   'rv_review': rv_review, 'rv_like': '0', 'm_id': m_id}
             db.reviews.insert_one(doc)
             db.tempurl.delete_one({'m_id': m_id, 'rv_url': url_receive})
             return jsonify({'msg': '저장 완료.'})
@@ -240,7 +240,7 @@ def pop_up():
     # db에 가수랑 제목을 가지고 가서 find_one 해온다.
 
     # if문을 사용해서 토큰 id랑 reviews에 있는 id랑 같으면
-    if musicSinger['rv_id'] == payload['id'] :
+    if musicSinger['m_id'] == payload['id']:
         return jsonify({'result':'success'}, {'musicSinger': musicSinger})
         # 성공 메세지를 전달한다.
     else :
@@ -254,20 +254,6 @@ def comment_up():
                                          {'_id': False, 'rv_singer': False, 'rv_song': False}))
      return jsonify({'comments': comments})
 
-# 회원에 따른 수정 삭제
-@app.route('/api/commentUp', methods=['GET'])
-def updateDeleteCheck():
-
-    token_receive = request.cookies.get('mytoken')
-    payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
-
-    singer_receive = request.args.get('rvSingerGive')
-    song_receive = request.args.get('rvSongGive')
-
-    check = list(db.reviews.find({'rv_singer': singer_receive, 'rv_song': song_receive},
-                                     {'_id': False}))
-
-    return jsonify()
 
 
 if __name__ == '__main__':
