@@ -162,7 +162,7 @@ def temp_save():
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
         rv_url = request.form['music_url']
         rv_review = request.form['review_give']
-        dup_check = db.tempurl.find_one({'rv_url':rv_url, 'rv_review':rv_review}, {'_id': False})
+        dup_check = db.tempurl.find_one({'rv_url':rv_url, 'm_id':payload['id']}, {'_id': False})
         if dup_check is not None:
             return jsonify({'msg': '동일한 임시저장 링크가 있습니다.'})
         else:
