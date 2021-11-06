@@ -108,6 +108,7 @@
     </style>
     <script type="text/javascript"
             src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <script src="https://kit.fontawesome.com/7cc8461e88.js" crossorigin="anonymous"></script>
     <script type="text/javascript">
 
 
@@ -143,8 +144,9 @@
                                         <div class="card-body">
                                             <span>${rvSinger}</span>
                                             <span>${rvSong}</span>
-                                            <span>좋아요: ${rvLike}</span>
+
                                             <p>${rvReview}</p>
+                                            <p><i class="far fa-thumbs-up"></i>: ${rvLike}</p>
                                         </div>
                                         <button onclick="setChildValue('${rvSong}', '${rvSinger}', '${rvReview}', '${rvLike}')">수정</button>
                                         <button onclick="deleteBtn('${rvSinger}', '${rvSong}')">삭제</button>
@@ -166,8 +168,8 @@
                                         <div class="card-body">
                                             <span>${rvSinger}</span>
                                             <span>${rvSong}</span>
-                                            <span>좋아요: ${rvLike}</span>
                                             <p>${rvReview}</p>
+                                            <p><i class="far fa-thumbs-up"></i>: ${rvLike}</p>
                                         </div>
                                         <div class="commentBtn">
                                            <form class="form-inline" onsubmit="return false;">
@@ -185,12 +187,7 @@
             })
         }
 
-        // function popUpOpa(){
-        //         let cards_deck = document.getElementById('cards-deck')
-        //         let popup = document.getElementById('popup')
-        //         cards_deck.style.opacity = '0.2'
-        //         popup.style.display = "block"
-        // }
+
 
         function popUpCommentUp(rv_singer, rv_song) {
             popUp(rv_singer, rv_song);
@@ -294,9 +291,7 @@
                     rv_song_give: rv_song
                 },
                 success: function (response) {
-                    console.log(response)
-                    alert(response["msg"]);
-                    window.location.reload()
+                     window.location.reload()
                 }
             })
         }
@@ -341,7 +336,7 @@
                 <div class="card-body">
                     <p class="card-text">{{ rv_singer }}</p>
                     <a target="_blank" href="{{ rv_url }}" class="card-title">{{ rv_song }}</a><br>
-                    <p class="card-text comment" onclick="likeUp('{{ rv_singer }}', '{{ rv_song }}')">(좋아요: {{ rv_like
+                    <p class="card-text comment" onclick="likeUp('{{ rv_singer }}', '{{ rv_song }}')">(<i class="far fa-thumbs-up"></i>: {{ rv_like
                         }}) </p>
 
                 </div>

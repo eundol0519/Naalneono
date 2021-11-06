@@ -21,46 +21,60 @@
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
-       <!-- test commit-->
-        //test commit 2
+        // 로그인
         function login() {
 
             $("#id_span").text("")
             $("#pw_span").text("")
+            // 아이디와 비밀번호를 다시 입력할 경우 #id_span과 #pw_span의 내용은 지워져야 하기 때문에 text를 ""로 설정한다.
 
-            let userId = $("#m_id").val()
-            let userPw = $("#m_pw").val()
+            let userId = $("#m_id").val() // 아이디
+            let userPw = $("#m_pw").val() // 비밀번호
 
+            // if문을 사용해서 아이디가 비어 있으면
+            // #id_span에 text를 삽입하고 색을 red로 설정한다.
+            // focus 함수를 사용해서 m_id를 입력하도록 설정한다.
             if (userId == "") {
                 $("#id_span").text("아이디를 입력해주세요.")
                 document.getElementById("id_span").style.color = "red"
                 $("#m_id").focus()
                 return;
-            } else {
+            } else { // 비어 있지 않을 경우 빈 text를 출력한다.
                 $("#id_span").text("")
             }
 
+            // if문을 사용해서 비밀번호가 비어 있으면
+            // #pw_span text를 삽입하고 색을 red로 설정한다.
+            // focus 함수를 사용해서 m_id를 입력하도록 설정한다.
             if (userPw == "") {
                 $("#pw_span").text("비밀번호를 입력해주세요.")
                 document.getElementById("pw_span").style.color = "red"
                 $("#m_pw").focus()
                 return;
-            } else {
+            } else { // 비어 있지 않을 경우 빈 text를 출력한다.
                 $("#pw_span").text("")
             }
+
+            // 아이디와 비밀번호가 비어 있지 않다ㅁ녀
+            // ajax로 와서
             $.ajax({
                 type: "POST",
                 url: "/api/login",
                 data: {
-                    m_id_give: userId,
-                    m_pw_give: userPw
+                    m_id_give: userId, // 아이디
+                    m_pw_give: userPw // 비밀번호
                 },
+                // 성공 시
                 success: function (response) {
+                    // api에서 result를 넘겨주기 때문에
+                    // result가 success이면
                     if (response['result'] == 'success') {
+                        // 토큰을 cookie에 담아서 브라우저가 기억 할 수 있도록 한다.
                         $.cookie('mytoken', response['token'], {path: '/'});
                         location.href = "/review"
                         // script에서 링크를 이동 할 때는 location.href = "링크"를 사용한다.
-                    } else {
+                    } else { // result가 false이면
+                        // msg를 출력한다.
                         alert(response['msg'])
                         $("#m_id").val("")
                         $("#m_pw").val("")
