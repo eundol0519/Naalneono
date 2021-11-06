@@ -127,40 +127,58 @@ def login():
 
 
 
-## reviewWrite api
-## crawling 후 DB 저장.
+# reviewWrite api
+# crawling 후 DB 저장.
 @app.route('/api/reviewWrite', methods=['POST'])
 def write_review():
     token_receive = request.cookies.get('mytoken')
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
 
+        # 사용자가 입력한 url, review를 받아온다.
         url_receive = request.form['music_url']
         rv_review = request.form['review_give']
+
+        # 넘어온 토큰의 아이디를 받아온다.
         m_id = payload['id']
 
+        # 크롤링 코드
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36'}
         data = requests.get(url_receive, headers=headers)
 
         soup = BeautifulSoup(data.text, 'html.parser')
+
+        # 크롤링된 rv_song, rv_image, rv_singer 데이터를 아래 변수에 할당한다.
         rv_song = soup.select_one(
             '#frm > div > table > tbody > tr > td:nth-child(4) > div > div > div:nth-child(1) > span > a').text
         rv_image = soup.select_one('#d_album_org > img')['src']
         rv_singer = soup.select_one(
             '#frm > div > table > tbody > tr > td:nth-child(4) > div > div > div.ellipsis.rank02 > a').text
 
-        ## 리뷰 등록 중복 체크
+
+        # reviews db에 크롤링한 rv_song과 동일한 데이터를 dup_check에 할당한다.
         dup_check = db.reviews.find_one({'rv_song': rv_song})
+
+        # 리뷰 등록 중복 체크
+        # dup_check이 존재하면 중복, 없으면 중복아님.
         if dup_check is not None:
+
+            # tempurl db에서 아이디와 rv_url이 동일한 데이터를 찾아 삭제한다.
+            # 중복이든 아니든 삭제해야함.
             db.tempurl.delete_one({'m_id': m_id, 'rv_url': url_receive})
-            return jsonify({'msg': '이미 리뷰가 등록된 노래 입니다.'})
+            return jsonify({'msg': '이미 리뷰가 등록된 노래 입니다.'}) # 클라이언트로 보내줄 데이터
         else:
+
+            # 비어있다면 해당 doc를 reviews db에 저장한다.
             doc = {'rv_song': rv_song, 'rv_image': rv_image, 'rv_singer': rv_singer, 'rv_url': url_receive,
                    'rv_review': rv_review, 'rv_like': '0', 'm_id': m_id}
             db.reviews.insert_one(doc)
+
+            # tempurl db에서 아이디와 rv_url이 동일한 데이터를 찾아 삭제한다.
+            # 중복이든 아니든 삭제해야함.
             db.tempurl.delete_one({'m_id': m_id, 'rv_url': url_receive})
-            return jsonify({'msg': '저장 완료.'})
+            return jsonify({'msg': '저장 완료.'}) # 클라이언트로 보내줄 데이터
 
     except jwt.ExpiredSignatureError:
         # 위를 실행했는데 만료시간이 지났으면 에러가 납니다.
@@ -168,26 +186,41 @@ def write_review():
     except jwt.exceptions.DecodeError:
         return jsonify({'result': 'fail', 'msg': '로그인 정보가 존재하지 않습니다.'})
 
-
+# 리뷰 수정 api
 @app.route('/api/reviewUpdate', methods=['POST'])
 def review_update():
+
+    # 클라이언트에서 가수 리뷰 노래를 받아온다.
     rv_singer = request.form['rv_singer_give']
     rv_review = request.form['review_update']
     rv_song = request.form['rv_song_give']
-    db.reviews.update_one({'rv_singer':rv_singer, 'rv_song':rv_song},{'$set':{'rv_review':rv_review}})
-    return jsonify({'msg': '야호'})
 
+    # reviews db에서 받아온 가수 노래가 일치하는 데이터의 rv_review를 업데이트 해준다.
+    db.reviews.update_one({'rv_singer':rv_singer, 'rv_song':rv_song},{'$set':{'rv_review':rv_review}})
+    return jsonify({'msg': ''})
+
+# 임시저장 api
 @app.route('/api/tempSave', methods=['POST'])
 def temp_save():
     token_receive = request.cookies.get('mytoken')
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
+
+        # 클라이언트에서 url, review를 받아온다.
         rv_url = request.form['music_url']
         rv_review = request.form['review_give']
+
+        # tempurl db에서 받아온 url과 아이디가 일치하는 데이터를 찾아 dup_check에 할당한다.
         dup_check = db.tempurl.find_one({'rv_url':rv_url, 'm_id':payload['id']}, {'_id': False})
+
+        # dup_check이 존재하면 중복.
         if dup_check is not None:
             return jsonify({'msg': '동일한 임시저장 링크가 있습니다.'})
+
+        # dup_check이 없으면 중복아님.
         else:
+
+            # doc에 해당 데이터를 넣어서 tempurl db에 저장한다.
             doc = {'rv_url': rv_url, 'rv_review': rv_review, 'm_id': payload['id']}
             db.tempurl.insert_one(doc)
             return jsonify({'msg': ''})
@@ -198,38 +231,58 @@ def temp_save():
         return jsonify({'result': 'fail', 'msg': '로그인 정보가 존재하지 않습니다.'})
 
 
-## 좋아요 api
-## POST 방식으로 rv_singer_give 를 받아옴.
+# 좋아요 api
 @app.route('/api/like', methods=['POST'])
 def like_up():
+
+    # 클라이언트에서 가수 제목을 받아온다
     singer_receive = request.form['rv_singer_give']
     song_receive = request.form['rv_song_give']
+
+    # reviews db에서 받아온 가수 제이 일치하는 데이터를 찾아 music_singer에 할당한다.
     music_singer = db.reviews.find_one({'rv_singer': singer_receive, 'rv_song': song_receive})
+
+    # music_singer의 rv_like를 current_like에 할당한다.
     current_like = music_singer['rv_like']
+
+    # current_like를 숫자로 바꿔 1을 더한 후 new_like에 할당한다.
     new_like = int(current_like) + 1
+
+    # reviews db에서 가수 제목이 일치하는 데이터를 찾아 rv_like를 new_like로 수정해준다.
     db.reviews.update_one({'rv_singer': singer_receive, 'rv_song': song_receive}, {'$set': {'rv_like': new_like}})
     return jsonify({'msg' : '좋아요 완료'})
 
-## 삭제 api
+# 삭제 api
 @app.route('/api/delete', methods=['POST'])
 def delete_pop():
+
+    # 클라이언트에서 가수, 제목를 받아온다.
     singer_receive = request.form['rv_singer_give']
     song_receive = request.form['rv_song_give']
+
+    # reviews db에서 가수, 제목이 일치하는 데이터를 찾아 삭제한다.
     db.reviews.delete_one({'rv_singer': singer_receive, 'rv_song': song_receive})
     return jsonify({'msg': '삭제 완료'})
 
+# 댓글 작성 api
 @app.route('/api/commentSubmit', methods=['POST'])
 def commentSubmit():
     token_receive = request.cookies.get('mytoken')
     try:
         payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
 
+        # 클라이언트에서 코맨트, 가수, 제목를 받아온다.
         comment_receive = request.form['rv_comment_give']
         singer_receive = request.form['rv_singer_give']
         song_receive = request.form['rv_song_give']
+
+        # member_info db 에서 아이디가 일치하는 데이터를 userinfo에 할당한다.
         userinfo = db.member_info.find_one({'m_id': payload['id']}, {'_id': False})
+
+        # userinfo의 m_name을 m_nick에 할당한다.
         m_nick = userinfo['m_name']
 
+        # doc에 해당 데이터를 담고 comments db에 저장한다.
         doc = {
             'rv_comment': comment_receive,
             'rv_singer': singer_receive,
@@ -245,21 +298,20 @@ def commentSubmit():
         return jsonify({'result': 'fail', 'msg': '로그인 정보가 존재하지 않습니다.'})
 
 
-## 팝업창 api
-## GET 방식으로 rvSingerGive 를 받아옴
+# 팝업창 api
 @app.route('/api/popUp', methods=['GET'])
 def pop_up():
-
     token_receive = request.cookies.get('mytoken')
     payload = jwt.decode(token_receive, SECRET_KEY, algorithms=['HS256'])
     # 토큰에 있는 아이디 값 불러온다.
 
+    # 클라이언트에서 가수, 노래를 받아온다.
     singer_receive = request.args.get('rvSingerGive')
     song_receive = request.args.get('rvSongGive')
 
+    # reviews db에서 받아온 가수, 노래가 일치하는 데이터를 찾아 musicSinger에 할당한다.
     musicSinger = db.reviews.find_one({'rv_singer': singer_receive, 'rv_song': song_receive},
                                      {'_id': False})
-    # db에 가수랑 제목을 가지고 가서 find_one 해온다.
 
     # if문을 사용해서 토큰 id랑 reviews에 있는 id랑 같으면
     if musicSinger['m_id'] == payload['id']:
@@ -268,10 +320,15 @@ def pop_up():
     else :
         return jsonify({'result':'fail'}, {'musicSinger': musicSinger})
 
+# 댓글 불러오기 api
 @app.route('/api/commentUp', methods=['GET'])
 def comment_up():
+
+     # 클라이언트에서 가수, 노래 불러온다.
      singer_receive = request.args.get('rvSingerGive')
      song_receive = request.args.get('rvSongGive')
+
+     # comments db에서 가수, 노래가 같은 데이터를 찾아 comments에 할당하고 클라이언트로 리턴한다.
      comments = list(db.comments.find({'rv_singer': singer_receive, 'rv_song': song_receive},
                                          {'_id': False, 'rv_singer': False, 'rv_song': False}))
      return jsonify({'comments': comments})

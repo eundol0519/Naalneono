@@ -26,20 +26,28 @@
     <script type="text/javascript">
 
 
-        <!--   리뷰작성ajax -->
+        // 리뷰작성 버튼 클릭 함수
         function makeReview() {
+
+            //입력된 url, review 불러오기.
             let url = $('#post-url').val()
             let review = $('#post-comment').val()
+
+            // url, review 모두 빈칸이 아닐때만 서버로 데이터 보냄
             if (url !== "" && review !== "") {
                 $.ajax({
                     type: "POST",
                     url: "/api/reviewWrite",
+
+                    //입력된 url, review 데이터를 서버로 보냄
                     data: {music_url: url, review_give: review},
                     success: function (response) {
                         alert(response["msg"]);
                         window.location.href = "/review";
                     }
                 })
+
+                //url, review 가 빈칸일 경우 나타나는 경고창
             } else {
                 alert('링크, 리뷰를 입력해주세요.')
             }
@@ -47,22 +55,30 @@
 
         }
 
-        <!-- 리뷰작성 다시쓰기 ajax -->
+        // 다시쓰기 버튼 클릭 함수
         function reWrite() {
+
+            //url, review의 value를 빈칸으로 수정.
             document.getElementById("post-url").value = "";
             document.getElementById("post-comment").value = "";
         }
 
-        <!-- 리뷰작성 임시저장 ajax -->
-        <!-- 어떻게 구현해야할지 모르겠음.. -->
 
+
+        // 임시저장 버튼 클릭 함수
         function temSave() {
+
+            // 입력된 url, review 를 변수에 저장.
             let url = $('#post-url').val()
             let review = $('#post-comment').val()
+
+            // url, review 둘다 빈칸이 아닐 경우에만 저장
             if (url !== "" && review !== "") {
                 $.ajax({
                     type: "POST",
                     url: "/api/tempSave",
+
+                    //url, review 데이터를 서버로 보냄
                     data: {music_url: url, review_give: review},
                     success: function (response) {
                         if (response['msg'] === "") {
@@ -112,9 +128,7 @@
             <button type="button" class="btn" onclick="window.location.href ='/review'">X</button>
             <h1>글쓰기</h1>
             <div class="form-group">
-
                 <label for="post-url">링크 입력</label>
-
                 <input id="post-url" class="form-control" value="{{ tempSave['rv_url']}}">
             </div>
             <div class="form-group">
