@@ -25,18 +25,24 @@
 
         <script type="text/javascript">
 
+            // review.html에서 setChildValue() 함수로 넘어온 데이터
 
+            // location.search를 통해 url 얻고
             let getLink = window.location.search;
-            let getUserName = getLink.split('&')//getLink를 '='를 기준으로 두 배열 요소로 분리
+
+            // .split(&) 으로 getLink의 데이터를 & 기준으로 배열 분리하고
+            let getUserName = getLink.split('&')
+
+            // 해당 배열을 다시 나누고, .split('=')으로 배열 분리 후 아래변수에 각각 할당.
             let getOnlyName0 = getUserName[0].split('=')[1]
             let getOnlyName1 = getUserName[1].split('=')[1]
-            // let getOnlyName2 = getUserName[2].split('=')[1]
-            // let getOnlyName3 = getUserName[3].split('=')[1]
+
+            // decodeURI 함수로 알아볼수 있는 언어로 변환
             let rvSong = decodeURI(getOnlyName0)
             let rvSinger = decodeURI(getOnlyName1)
-            // let rvReview = decodeURI(getOnlyName2)
-            // let rvLike = decodeURI(getOnlyName3)
 
+            // reviewUpdate.html이 로딩되면 바로 실행되는 함수.
+            // 위에서 찾아낸 제목(rvSong), 가수(rvSinger)를 넣어 페이지 구성
             $(document).ready(function loadPri() {
                 let temp_html = `<h1>나알너노</h1><br>
                                   <button type="button" class="btn btn-primary" onclick="window.location.href='/review'">X</button>
@@ -45,17 +51,27 @@
                 $('#load-pri').append(temp_html)
             })
 
-
+             // 다시쓰기 함수
              function reWrite() {
+
+                // 해당 value 값을 ""으로 바꿔줌
                 document.getElementById("post-comment").value = "";
             }
 
+
+            // 리뷰 수정 업데이트 버튼 클릭 함수
             function reviewUpdate() {
+
+                // 입력된 리뷰 수정 값을 받아옴.
                 let reUpdate = $('#post-comment').val();
+
+                // 빈칸이 아닐때만 작동되게
                 if (reUpdate !== "") {
                     $.ajax({
                         type: "POST",
                         url: "/api/reviewUpdate",
+
+                        // 가수, 제목, 리뷰 수정값 데이터를 서버로 보냄
                         data: {
                             rv_singer_give: rvSinger,
                             rv_song_give: rvSong,
