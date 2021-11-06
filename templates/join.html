@@ -26,11 +26,13 @@
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
-        // 정규식 검사
+        // 닉네임 정규식 검사
         function is_name(){
-            let name = $("#m_name").val()
-            console.log(name)
-            let regExp = /^[A-Za-z]{1}[A-Za-z0-9]{1,11}$/;
+
+            let name = $("#m_name").val() // 닉네임
+            let regExp = /^[A-Za-z]{1}[A-Za-z0-9]{1,11}$/; // 정규식 검사
+
+            // if문을 사용해서 정규식 검사 코드와 닉네임이 같은 지 확인한다.
             if(!regExp.test(name)){
                 $("#name_span").text("정규식에 맞게 입력 해주세요")
                 document.getElementById("name_span").style.color = "red"
@@ -38,12 +40,14 @@
             }
         }
 
-        // 정규식 검사
+        // 아이디 정규식 검사
         function is_id() {
-            let id = $("#m_id").val()
-            let regExp = /^[a-z]+[a-z0-9]{5,19}$/g;
+
+            let id = $("#m_id").val() // 아이디
+            let regExp = /^[a-z]+[a-z0-9]{5,19}$/g; // 정규식 검사
             // 영문자로 시작하는 6~20자 영문자 또는 숫자
 
+            // if문을 사용해서 정규식 검사 코드와 닉네임이 같은 지 확인한다.
             if(!regExp.test(id)){
                 $("#id_span").text("정규식에 맞게 입력 해주세요")
                 document.getElementById("id_span").style.color = "red"
@@ -53,28 +57,42 @@
 
         // 닉네임 중복 검사
         function nameCheck() {
+
             $("#name_span").empty()
-            let userName = $("#m_name").val()
-            if (userName == "") {
+            // 닉네임을 다시 입력할 경우 #name_span의 내용은 지워져야 하기 때문에 empty() 함수를 사용한다.
+
+            let userName = $("#m_name").val() // 닉네임
+
+            if (userName == "") { // 닉네임이 비어 있을 경우
                 $("#name_span").text("닉네임을 입력 해주세요")
                 document.getElementById("name_span").style.color = "red"
                 $("#m_name").focus()
                 return;
-            }else{ // 비어 있지 않으면
+            }else{ // 닉네임이 비어 있지 않으면
+                // ajax를 사용해서 값을 api로 넘겨준다.
                 $.ajax({
                     type: "POST",
                     url: "/api/nameCheck",
                     data: {
-                        "m_name_give": userName
+                        "m_name_give": userName // 닉네임
                     },
+                    // 성공 시
                     success: function (response) {
+                        // api에서 exists를 넘겨주기 때문에
+                        // exists가 success이면
                         if (response["exists"] == true) {
                             $("#name_span").text("이미 존재하는 닉네임입니다.").removeClass("is-safe").addClass("is-danger")
+                            // #name_span에 text를 넣고
+                            // removwClass를 해서 is-safe라는 이름의 클래스를 지우고
+                            // addClass를 해서 is-danger이라는 이름의 클래스를 넣는다.
                             document.getElementById("name_span").style.color = "red"
                             $("#input-username").focus()
                             $("#m_name").val('')
-                        } else { // response["exists"] == flase
+                        } else { // exists가 false이면
                             $("#name_span").text("사용할 수 있는 닉네임입니다.").removeClass("is-danger").addClass("is-success")
+                            // #name_span에 text를 넣고
+                            // addClass를 해서 is-safe라는 이름의 클래스를 지우고
+                            // removwClass를 해서 is-danger이라는 이름의 클래스를 넣는다.
                             document.getElementById("name_span").style.color = "green"
                             $("#m_name").val(userName)
                         }
@@ -85,29 +103,42 @@
 
         // 아이디 중복 검사
         function idCheck() {
-            $("#id_span").empty()
-            let userId = $("#m_id").val()
 
-            if (userId == "") {
+            $("#id_span").empty()
+            // 아이디를 다시 입력할 경우 #name_span의 내용은 지워져야 하기 때문에 empty() 함수를 사용한다.
+
+            let userId = $("#m_id").val() // 아이디
+
+            if (userId == "") { // 아이디가 비어 있을 경우
                 $("#id_span").text("아이디를 입력 해주세요")
                 document.getElementById("id_span").style.color = "red"
                 $("#m_id").focus()
                 return
-            }else{
+            }else{ // 아이디가 비어 있지 않을 경우
+                // ajax를 사용해서 값을 api로 넘겨준다.
                 $.ajax({
                     type: "POST",
                     url: "/api/idCheck",
                     data: {
-                        m_id_give: userId
+                        m_id_give: userId // 아이디
                     },
+                    // 성공 시
                     success: function (response) {
+                        // api에서 exists를 넘겨주기 때문에
+                        // exists가 success이면
                         if (response["exists"]) {
                             $("#id_span").text("이미 존재하는 아이디입니다.").removeClass("is-safe").addClass("is-danger")
+                            // #id_span에 text를 넣고
+                            // removwClass를 해서 is-safe라는 이름의 클래스를 지우고
+                            // addClass를 해서 is-danger이라는 이름의 클래스를 넣는다.
                             document.getElementById("id_span").style.color = "red"
                             $("#m_id").val("")
                             $("#m_id").focus()
                         } else {
                             $("#id_span").text("사용할 수 있는 아이디입니다.").removeClass("is-danger").addClass("is-success")
+                            // #id_span에 text를 넣고
+                            // addClass 해서 is-safe라는 이름의 클래스를 지우고
+                            // removeCalss 해서 is-danger이라는 이름의 클래스를 넣는다.
                             document.getElementById("id_span").style.color = "green"
                             $("#m_id").val(userId)
                         }
@@ -115,23 +146,24 @@
                 });
         }}
 
-        // 비밀번호 일치하는 지 확인
+        // 비밀번호 정규식 검사
         function pwCheck() {
+
             let m_pw = $("#m_pw").val()
             // 비밀번호 정규식 검사
             let regExp = /^[a-z]+[a-z0-9]{5,19}$/g;
             // 영문자로 시작하는 6~20자 영문자 또는 숫자
 
-            if (m_pw == "") {
+            if (m_pw == "") { // 비밀번호가 비어 있다면
                 $("#pw_span").text("비밀번호를 입력해주세요.")
                 document.getElementById("pw_span").style.color = "red"
                 $("#m_pw").focus()
                 return;
-            } else if (!regExp.test(m_pw)) {
+            } else if (!regExp.test(m_pw)) { // 정규식에 맞지 않는다면
                 $("#pw_span").text("정규식에 맞게 입력 해주세요")
                 document.getElementById("pw_span").style.color = "red"
                 $("#m_pw").val("")
-            } else {
+            } else { // 비어 있지도 않고 정규식에도 맞다면
                 $("#pw_span").text("사용할 수 있는 비밀번호입니다.").removeClass("is-danger").addClass("is-success")
                 document.getElementById("pw_span").style.color = "green"
             }
@@ -139,20 +171,24 @@
 
         // 비밀번호랑 비밀번호 확인 비교
         function pwReCheck(){
-            let m_pw = $("#m_pw").val()
-            let m_pw_check = $("#m_pw_check").val()
+            let m_pw = $("#m_pw").val() // 비밀번호
+            let m_pw_check = $("#m_pw_check").val() // 비밀번호 확인
 
-            if (m_pw_check == "") {
+            if (m_pw_check == "") { // 비밀번호 확인이 비어 있다면
                 $("#pw_check_span").text("비밀번호를 입력해주세요.").removeClass("is-safe").addClass("is-danger")
+                // removeClass를 사용해서 is-safe를 지우고
+                // addClass를 사용해서 is-danger를 넣는다.
                 document.getElementById("pw_check_span").style.color = "red"
                 $("#m_pw_check").focus()
                 return;
-            } else if (m_pw_check != m_pw) {
+            } else if (m_pw_check != m_pw) { // 비밀번호와 비밀번호 확인이 같지 않다면
                 $("#pw_check_span").text("비밀번호가 일치하지 않습니다.").removeClass("is-safe").addClass("is-danger")
+                // removeClass를 사용해서 is-safe를 지우고
+                // addClass를 사용해서 is-danger를 넣는다.
                 document.getElementById("pw_check_span").style.color = "red"
                 $("#m_pw_check").val("")
                 return;
-            } else {
+            } else { // 비밀번호 확인도 입력 했고 비밀번호와 비밀번호 확인이 같다면
                 $("#pw_check_span").text("비밀번호가 일치합니다.").removeClass("is-danger").addClass("is-success")
                 document.getElementById("pw_check_span").style.color = "green"
             }
@@ -160,44 +196,51 @@
 
         // 회원가입
         function sign_up() {
-            let m_name = $("#m_name").val()
-            let m_id = $("#m_id").val()
-            let m_pw = $("#m_pw").val()
-            let m_pw_check = $("#m_pw_check").val()
+
+            let m_name = $("#m_name").val() // 닉네임
+            let m_id = $("#m_id").val() // 아이디
+            let m_pw = $("#m_pw").val() // 비밀번호
+            let m_pw_check = $("#m_pw_check").val() // 비밀번호 학인
 
             if ($("#name_span").hasClass("is-danger")) {
+                // #name_span이 is-danger라는 class 이름을 가지고 있다면
                 $("#name_span").text("닉네임을 다시 확인해주세요")
                 document.getElementById("name_span").style.color = "red"
             } else if (!$("#name_span").hasClass("is-success")) {
+                // #name_span이 is-success라는 class 이름을 가지고 있다면
                 $("#name_span").text("닉네임 중복 확인을 해주세요.")
                 document.getElementById("name_span").style.color = "red"
             }
 
             if ($("#id_span").hasClass("is-danger")) {
                 $("#id_span").text("아이디를 다시 확인해주세요")
+                // #id_span is-danger라는 class 이름을 가지고 있다면
                 document.getElementById("id_span").style.color = "red"
             } else if (!$("#id_span").hasClass("is-success")) {
+                // #id_span is-success라는 class 이름을 가지고 있다면
                 $("#id_span").text("아이디 중복확인을 해주세요.")
                 document.getElementById("id_span").style.color = "red"
             }
 
-            if (m_pw == "") {
+            if (m_pw == "") { // 비밀번호가 비어 있다면
                 $("#pw_span").text("비밀번호를 입력해주세요.")
                 document.getElementById("pw_span").style.color = "red"
                 $("#m_pw").focus()
-            }else if(m_pw_check == ""){
+            }else if(m_pw_check == ""){ // 비밀번호 확인이 비어 있다면
                 $("#pw_check_span").text("비밀번호를 입력해주세요.")
                 document.getElementById("pw_check_span").style.color = "red"
                 $("#m_pw_check").focus()
             }else{
+                // ajax를 사용해서 api로 이동한다.
                 $.ajax({
                     type: "POST",
                     url: "/api/join",
                     data: {
-                        "m_name_give": m_name,
-                        "m_id_give": m_id,
-                        "m_pw_give": m_pw
+                        "m_name_give": m_name, // 닉네임
+                        "m_id_give": m_id, // 아이디
+                        "m_pw_give": m_pw // 비밀번호
                     },
+                    // 성공 시
                     success: function (response) {
                         alert("회원가입을 축하드립니다!")
                         window.location.replace("/")

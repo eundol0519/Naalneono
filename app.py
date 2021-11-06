@@ -27,12 +27,13 @@ def home():
 def join():
     return render_template('join.html')
 
+## 리뷰 페이지로 이동
 @app.route('/review')
 def review():
     reviews = list(db.reviews.find({}, {'_id': False}))
     return render_template('review.html', reviews=reviews)
 
-## reviewWrite.html
+## 리뷰 작성 페이지로 이동
 @app.route('/reviewWrite')
 def reviewWirte():
     token_receive = request.cookies.get('mytoken')
@@ -55,51 +56,72 @@ def reviewUpdate():
 @app.route('/api/nameCheck', methods=["POST"])
 def name_Check():
     m_name_receive = request.form['m_name_give']
+    # ajax로 사용자가 입력한 닉네임을 가져와서 m_name_receive에 담는다.
     exists = bool(db.member_info.find_one({"m_name":m_name_receive}))
+    # member_info 콜렉션에서 m_name을 조건으로 컬럼이 있는 지 찾고 bool로 true인 지 false인 지 exists로 받는다.
     return jsonify({'result':'success', 'exists':exists})
 
 ## 아이디 중복확인
 @app.route('/api/idCheck', methods=['POST'])
 def id_Check():
     m_id_receive = request.form['m_id_give']
+    # ajax로 사용자가 입력한 아이디를 가져와서 m_id_receive에 담는다.
     exists = bool(db.member_info.find_one({"m_id": m_id_receive}))
+    # member_info 콜렉션에서 m_id를 조건으로 컬럼이 있는 지 찾고 bool로 true인 지 false인 지 exists로 받는다.
     return jsonify({'result': 'success', 'exists': exists})
 
 ## 회원가입
 @app.route('/api/join', methods=['POST'])
 def member_join():
-    m_name_receive = request.form['m_name_give']
-    m_id_receive = request.form['m_id_give']
-    m_pw_receive = request.form['m_pw_give']
+    # 사용자가 입력한 정보들을 ajax로 받는다.
+    m_name_receive = request.form['m_name_give'] # 닉네임
+    m_id_receive = request.form['m_id_give'] # 아이디
+    m_pw_receive = request.form['m_pw_give'] # 비밀번호
+
+    # 비밀번호는 개발자나 불순한 의도를 가진 사람이 쉽게 접근 할 수 없도록 해야 하기 때문에
+    # hash를 사용해서 암호화 한다.
     password_hash = hashlib.sha256(m_pw_receive.encode('utf-8')).hexdigest()
+
+    # 사용자 정도를 doc에 담아서 db로 insert 할 준비를 한다.
     doc = {
         "m_name" : m_name_receive,   # 닉네임
         "m_id": m_id_receive,    # 아이디
         "m_pw": password_hash,     # 비밀번호
     }
+
+    # member_info 컬렉션이 doc을 insert_one 해서 삽입한다.
     db.member_info.insert_one(doc)
     return jsonify({'result': 'success'})
 
 ## 로그인
 @app.route('/api/login', methods=['POST'])
 def login():
-    m_id_receive = request.form['m_id_give']
-    m_pw_receive = request.form['m_pw_give']
 
+    # 사용자가 입력한 아이디와 비밀번호를 불러온다.
+    m_id_receive = request.form['m_id_give'] # 아이디
+    m_pw_receive = request.form['m_pw_give'] # 비밀번호
+
+    # 사용자가 입력한 비밀번호를 콜렉션에 있는 비밀번호와 비교하기 위해서
+    # hash를 사용해서 암호화 한다.
     pw_hash = hashlib.sha256(m_pw_receive.encode('utf-8')).hexdigest()
+
+    # member_info 콜렉션에 id와 pw가 같은 사용자가 있는 지 찾는다.
     result = db.member_info.find_one({'m_id': m_id_receive, 'm_pw': pw_hash})
 
+    # if문을 사용해서 result가 비어 있지 않다면
     if result is not None:
+        # 토큰을 만들기 위해 id와 로그인 유지 시간을 payload에 담는다.
         payload = {
          'id': m_id_receive,
          'exp': datetime.utcnow() + timedelta(seconds=60 * 60 * 24)  # 로그인 24시간 유지
         }
+        # pyjwt를 이용하여 토큰을 생성한다.
         token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
-        print(token)
         # jwt 토큰은 놀이공원 자유이용권 같은 거
 
         return jsonify({'result': 'success', 'token': token})
     # 찾지 못하면
+    # 토큰을 생성하지 않고 아이디/비밀번호가 일치하지 않는다는 문구를 띄운다.
     else:
         return jsonify({'result': 'fail', 'msg': '아이디/비밀번호가 일치하지 않습니다.'})
 
