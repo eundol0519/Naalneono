@@ -2,7 +2,7 @@
 <html lang="ko">
 
 <head>
-    <!--    comment-->
+
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -108,26 +108,30 @@
     </style>
     <script type="text/javascript"
             src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+    <!--fontawesome-->
     <script src="https://kit.fontawesome.com/7cc8461e88.js" crossorigin="anonymous"></script>
     <script type="text/javascript">
 
 
-        <!-- 팝업창ajax -->
+        //review.html의 앨범 사진 클릭 시 팝업창 띄어주는 함수.
         function popUp(rv_singer, rv_song) {
             $.ajax({
                 type: "GET",
+
+                // 클릭된 사진에 대한 가수, 노래 데이터 서버로 전달
                 url: "api/popUp?rvSingerGive=" + rv_singer + "&rvSongGive=" + rv_song,
                 data: {},
                 success: function (response) {
-                    //{#팝업창이 중복으로 뜨는 것을 막기위해 추가#}
+                    // 팝업창 중복 막기
                     $('#popup1').empty()
 
-                    //{#팝업창 보여줄때 배경과 팝업창 효과#}
+                    // 팝업창 클릭시 나타나는 효과 모음
                     let cards_deck = document.getElementById('cards-deck')
                     let popup = document.getElementById('popup')
                     cards_deck.style.opacity = '0.2'
                     popup.style.display = "block"
 
+                    // 서버에서 받아온 데이터
                     let rvSong = response[1]['musicSinger']['rv_song'];
                     let rv_image = response[1]['musicSinger']['rv_image'];
                     let rvSinger = response[1]['musicSinger']['rv_singer'];
@@ -135,6 +139,8 @@
                     let rvReview = response[1]['musicSinger']['rv_review'];
                     let temp_html = ""
 
+                    // id값에 따라서 success와 fail로 나눠서 받아옴.
+                    // success 일 경우 수정/삭제 버튼 추가.
                     if(response[0]['result']=='success'){
                                                 temp_html = `<div class="card cardList">
                                         <button class="btn closeBtn" id="closeBtn" align="right" onclick="closeBtn()">X</button>
@@ -188,18 +194,22 @@
         }
 
 
-
+        // review 페이지에 있는 앨범사진 클릭 시 실행되는 함수들.
         function popUpCommentUp(rv_singer, rv_song) {
             popUp(rv_singer, rv_song);
             commentUp(rv_singer, rv_song)
         }
 
+        // 팝업창 클릭 시 댓글들 불러오는 함수
         function commentUp(rv_singer, rv_song) {
             $.ajax({
                     type: "GET",
+
+                    // 서버로 가수, 제목 데이터를 보냄
                     url: "api/commentUp?rvSingerGive=" + rv_singer + "&rvSongGive=" + rv_song,
                     data: {},
                     success: function (response) {
+                        // 댓글창이 중복되는 것을 막음.
                         $('#commentAll').empty()
                         let comment = response['comments']
                         for (let i = 0; i < comment.length; i++) {
@@ -218,14 +228,7 @@
             )
         }
 
-        //onclick 이벤트로 conmmentSubmit() 함수 실행
-        //DB에서 어떻게 관리할건지 생각
-        //그럼 (가수, 노래)로 구성된 DB저장공간 하나 만들고 거기에 저장?
-        //그럼 순서는 클릭 -> data 전달 (POST요청) (rv_singer, rv_song, rv_comment, rv_name)
-        //-> (rv_singer, rv_song, rv_comment, rv_name)를 DB에 저장
-        //-> popUp() 함수 실행 할때마다 (rv_singer, rv_song)이 일치하는 DB 찾고
-        //-> 해당 DB에서 (rv_name, rv_comment) 이거 내려줘서 클라이언트로 보내주고 (GET요청)
-        //-> 클라이언트에서 temp_html로 뿌려주면 끝
+        // 댓글 등록 버튼 클릭 함수
         function commentSubmit(rv_singer, rv_song) {
             let inputText = $('#inputText').val()
 
@@ -233,6 +236,8 @@
                 $.ajax({
                     type: "POST",
                     url: "/api/commentSubmit",
+
+                    // 서버로 가수, 노래, 입력된 값을 전달함.
                     data: {
                         rv_comment_give: inputText,
                         rv_singer_give: rv_singer,
@@ -247,21 +252,26 @@
             }
         }
 
-        //{#팝업창 닫기 버튼#}
-        //{#이름만 닫기버튼이지 그냥 css 바꿔서 감춰주는 역할#}
-        //{#기존에 남아있는 팝업창 데이터는 popUp() 에서 .empty()함수로 해결#}
+        //팝업창 닫기 버튼 클릭 함수
         function closeBtn() {
             let cards_deck = document.getElementById('cards-deck')
             let popup = document.getElementById('popup')
+
+            //review 카드 모음 화면의 투명도를 없앰
             cards_deck.style.opacity = '1'
+
+            //팝업창을 숨김
             popup.style.display = "none"
         }
 
+        // 삭제 버튼 클릭 함수
         function deleteBtn(rv_singer, rv_song) {
             if (confirm("정말로 삭제 하시겠습니까?")) {
                 $.ajax({
                     type: "POST",
                     url: "/api/delete",
+
+                    // 서버로 클릭된 가수, 제목을 보냄.
                     data: {
                         rv_singer_give: rv_singer,
                         rv_song_give: rv_song
@@ -275,17 +285,21 @@
             }
         }
 
-        //{#onclick을 통해서 서버로 보내지 않고 바록 html 페이지로 데이터 전송해야 함.#}
-        //{#html 끼리 데이터 전송을 위해 URL로 통신. 이게 아마 get 요청할때 url 입력하는거랑 비슷해보이는데 공부 해야함.#}
+        // 팝업창에 있는 수정 버튼 함수
+        // 수정 페이지로 넘어갈때 클릭된 팝업창의 가수, 제목이 같이 넘어가서 해당 페이지를 꾸며줘야함.
+        // review.html -> 서버 -> reviewUpdate.html 의 구조를 생각했는데 다른 html로 서버를 통해 데이터 전달하는 방법을 몰라
+        // window.location.href 를 이용해 URL로 데이터 전달. (get??)
         function setChildValue(index1, index2, index3, index4) {
             window.location.href = "reviewUpdate?rvSong=" + index1 + "&rvSinger=" + index2 + "&rvReview=" + index3 + "&rvLike=" + index4
         }
 
-        <!-- 좋아요 ajax -->
+        // 좋아요 함수
         function likeUp(rv_singer, rv_song) {
             $.ajax({
                 type: "POST",
                 url: "/api/like",
+
+                //가수, 제목 데이터를 서버로 보냄.
                 data: {
                     rv_singer_give: rv_singer,
                     rv_song_give: rv_song
@@ -296,6 +310,7 @@
             })
         }
 
+        // 로그아웃 함수
         function sign_out() {
             $.removeCookie('mytoken', {path: '/'});
             alert('로그아웃!')
@@ -319,7 +334,8 @@
         </div>
     </nav>
 
-    <!-- jinja2 SSR 적용 부분  -->
+    <!-- jinja2 적용 부분  -->
+    <!-- review.html 카드 구성 부분   -->
     <div id="cards-deck" class="flex-container ">
         <div id="cards-box" class="card-columns">
             {% for review in reviews %}
@@ -338,17 +354,13 @@
                     <a target="_blank" href="{{ rv_url }}" class="card-title">{{ rv_song }}</a><br>
                     <p class="card-text comment" onclick="likeUp('{{ rv_singer }}', '{{ rv_song }}')">(<i class="far fa-thumbs-up"></i>: {{ rv_like
                         }}) </p>
-
                 </div>
             </div>
             {% endfor %}
         </div>
     </div>
 
-    <!-- 팝업창 들어갈 위치. -->
-    <!--{#팝업창은 매번 띄어주는 데이터가 매번 달라져야 하기 때문에 temp_html로 갖다 붙였는데 이게 맞는 방법인지 모르겠음#}-->
-    <!--{#jinja2로 구성하려면 DB에 저장하고 그 저장된 데이터를 찾아서 붙여줘야하는데 애초에 DB에 저장을 안하고 띄어주는 방식이라서 temp_html로 구성#}{#    #}-->
-    <!--{#CSS는 너무 어렵다#}-->
+    <!--팝업창 구성 부분-->
     <div id="popup" class="popup">
         <div id="popup1"></div>
         <div id="popComment">
@@ -361,14 +373,11 @@
                 </tr>
                 </thead>
                 <tbody id="commentAll">
-
                 </tbody>
             </table>
         </div>
     </div>
-
 </div>
 </div>
 </body>
-
 </html>
